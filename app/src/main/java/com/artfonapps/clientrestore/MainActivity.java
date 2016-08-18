@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     TextView point_name;
     Fragment fragment1;
     private FragmentTransaction transaction;
-    ArrayList<Point> points = new ArrayList<Point>();
+    ArrayList<Point> points = new ArrayList<>();
     TextView arrivalTime;
     TextView loadType;
     private SlidingUpPanelLayout myDrawerLayout;
@@ -157,12 +157,9 @@ public class MainActivity extends AppCompatActivity {
         getIntent().putExtra("pass", prefs.getString("PASS_CODE", ""));
         JSONParser.domainName = prefs.getString("CUR_SERVER", JSONParser.productionDomainName);
 
-        if (getIntent().getStringExtra("pass") != null &&
-                getIntent().getStringExtra("pass").equals("3656834")) {
-            DEBUG = true;
-        }
-        else
-            DEBUG = false;
+        DEBUG = (getIntent().getStringExtra("pass") != null &&
+                    getIntent().getStringExtra("pass").equals("3656834"));
+
 
 
         currentLocation.setLatitude(0);
@@ -238,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (currentLocation.distanceTo(targetLocation) > 1000 && DEBUG == false) {
+                if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     (new LogTask()).execute(Methods.location_error, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
                     builder.setTitle("Предупреждение");
@@ -312,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
         showProgress(true);
     }
 
-
+    //commit
     public void onButtonClick() {
         if (fab.getProgress() == 0) {
             (new LogTask()).execute(Methods.click_point, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
@@ -423,9 +420,7 @@ public class MainActivity extends AppCompatActivity {
     private class LoginTask extends AsyncTask<Void, Void, JSONObject> {
         @Override
         protected JSONObject doInBackground(Void... args) {
-            JSONParser parser = new JSONParser();
-            JSONObject obj = parser.loginFromUrl();
-            return obj;
+            return new JSONParser().loginFromUrl();
         }
 
         @Override
@@ -433,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
             showProgress(false);
             fab.setProgress(0);
             try {
-                if (res == null || res.keys().hasNext() == false || res.getInt("status_code") != 200) {
+                if (res == null || !res.keys().hasNext() || res.getInt("status_code") != 200) {
                     Toast.makeText(MainActivity.this, "Ошибка соединения с сервером", Toast.LENGTH_LONG).show();
                     (findViewById(R.id.endLayout)).setVisibility(View.VISIBLE);
                     return;
@@ -521,7 +516,7 @@ public class MainActivity extends AppCompatActivity {
             showProgress(false);
             fab.setProgress(0);
             try {
-                if (res == null  || res.keys().hasNext() == false ||  res.getInt("status_code") != 200) {
+                if (res == null  || !res.keys().hasNext() ||  res.getInt("status_code") != 200) {
                     Toast.makeText(MainActivity.this, "Ошибка соединения с сервером", Toast.LENGTH_LONG).show();
                     (findViewById(R.id.endLayout)).setVisibility(View.VISIBLE);
                     return;
@@ -654,14 +649,12 @@ public class MainActivity extends AppCompatActivity {
     private class ReqJobTask extends AsyncTask<String, Void, JSONObject> {
         @Override
         protected JSONObject doInBackground(String... args) {
-            JSONParser parser = new JSONParser();
-            JSONObject obj = parser.getJSONFromUrl("api/auto/mobile/job", new HashMap<String, String>() {{
+            return new JSONParser().getJSONFromUrl("api/auto/mobile/job", new HashMap<String, String>() {{
                 JSONObject res = new JSONObject();
                 put("currentOperation", Integer.toString(currentOperation));
                 put("mobile", phoneNumber);
 
             }}, getApplicationContext());
-            return obj;
         }
 
         private void setTexts(final Point pt) {
@@ -696,7 +689,7 @@ public class MainActivity extends AppCompatActivity {
             showProgress(false);
             fab.setProgress(0);
             try {
-                if (res == null  || res.keys().hasNext() == false || res.getInt("status_code") != 200) {
+                if (res == null  || !res.keys().hasNext() || res.getInt("status_code") != 200) {
                     Toast.makeText(MainActivity.this, "Ошибка соединения с сервером", Toast.LENGTH_LONG).show();
                     (findViewById(R.id.endLayout)).setVisibility(View.VISIBLE);
                     return;
@@ -795,13 +788,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }
-                if (flag) {
-                    (findViewById(R.id.endLayout)).setVisibility(View.VISIBLE);
-                } else {
-                    (findViewById(R.id.endLayout)).setVisibility(View.GONE);
-                }
-
-
+                (findViewById(R.id.endLayout)).setVisibility(flag ? View.VISIBLE : View.GONE);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -862,7 +849,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putString("PROPERTY_MOBILE", "");
             editor.putString("PASS_CODE", "");
             editor.putString("CUR_SERVER", JSONParser.domainName);
-            editor.commit();
+            editor.apply();
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
             new Delete().from(Point.class).execute();
@@ -899,7 +886,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putString("PROPERTY_MOBILE", "");
             editor.putString("PASS_CODE", "");
             editor.putString("CUR_SERVER", JSONParser.domainName);
-            editor.commit();
+            editor.apply();
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
             new Delete().from(Point.class).execute();
@@ -996,10 +983,10 @@ public class MainActivity extends AppCompatActivity {
                 //pushes.add(new PushItem(intent.getStringExtra("date"), intent.getStringExtra("title"), intent.getStringExtra("description")));
                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(CookieStorage.activity);
                 LayoutInflater inflater = getLayoutInflater();
-                View convertView = (View) inflater.inflate(R.layout.alert_layout, null);
+                View convertView =  inflater.inflate(R.layout.alert_layout, null);
                 final String order_id = intent.getStringExtra("order_id");
                 ListView alertList = (ListView) convertView.findViewById(R.id.alertList);
-                ArrayList<AlertPointItem> points2 = new ArrayList<AlertPointItem>();
+                ArrayList<AlertPointItem> points2 = new ArrayList<>();
                 try {
                     JSONObject jobj = new JSONObject(intent.getStringExtra("desc"));
                     JSONArray pts = jobj.getJSONArray("points");
@@ -1051,12 +1038,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected JSONObject doInBackground(final String... params) {
-            JSONParser parser = new JSONParser();
-            JSONObject obj = parser.getJSONFromUrl("api/auto/mobile/job/accept", new HashMap<String, String>() {{
+            return new JSONParser().getJSONFromUrl("api/auto/mobile/job/accept", new HashMap<String, String>() {{
                 put("id", params[0]);
                 put("accepted", params[1]);
             }}, getApplicationContext());
-            return obj;
         }
 
         @Override
@@ -1069,8 +1054,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected JSONObject doInBackground(final String... params) {
-            JSONParser parser = new JSONParser();
-            JSONObject obj = parser.getJSONFromUrl("api/auto/mobile/log", new HashMap<String, String>() {{
+
+            return new JSONParser().getJSONFromUrl("api/auto/mobile/log", new HashMap<String, String>() {{
                 JSONObject object = new JSONObject();
                 JSONArray arr = new JSONArray();
                 try {
@@ -1095,7 +1080,6 @@ public class MainActivity extends AppCompatActivity {
                 put("phoneNumber", phoneNumber);
                 put("currentJson", object.toString());
             }}, getApplicationContext());
-            return obj;
         }
 
         @Override
