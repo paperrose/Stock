@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.artfonapps.clientrestore">
+
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="23" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_PROFILE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <permission android:name="com.artfonapps.clientrestore.permission.C2D_MESSAGE"/>
+
+
+    <uses-permission android:name="com.artfonapps.clientrestore.permission.C2D_MESSAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application android:theme="@style/AppTheme" android:label="@string/app_name" android:icon="@drawable/logo"
+        android:name="com.activeandroid.app.Application">
+        <receiver android:name="com.artfonapps.clientrestore.network.pushes.GCMBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.USER_PRESENT" />
+                <category android:name="com.artfonapps.clientrestore" />
+            </intent-filter>
+        </receiver>
+        <service android:name="com.artfonapps.clientrestore.network.pushes.GCMIntentService" />
+        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+
+        <activity android:theme="@style/AppTheme"
+            android:label="@string/app_name"
+
+            android:name="com.artfonapps.clientrestore.MainActivity"
+
+            android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
+        <activity android:theme="@style/AppTheme" android:label="@string/app_name"
+            android:name="com.artfonapps.clientrestore.views.StartActivity"
+            android:excludeFromRecents="true" >
+
+        </activity>
+
+
+        <activity android:theme="@style/AppTheme" android:label="@string/app_name"
+            android:name="com.artfonapps.clientrestore.LoginActivity" />
+
+
+        <meta-data android:name="AA_DB_NAME" android:value="PointsAA.db" />
+        <meta-data android:name="AA_DB_VERSION" android:value="3" />
+        <meta-data android:name="AA_MODELS" android:value="             com.artfonapps.clientrestore.db.Point         " />
+        <provider android:name="com.google.android.gms.measurement.AppMeasurementContentProvider" android:exported="false"
+            android:authorities="com.artfonapps.clientrestore.google_measurement_service" />
+        <receiver android:name="com.google.android.gms.measurement.AppMeasurementReceiver" android:enabled="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.measurement.UPLOAD" />
+            </intent-filter>
+        </receiver>
+        <service android:name="com.google.android.gms.measurement.AppMeasurementService" android:enabled="true" android:exported="false" />
+    </application>
+
+</manifest>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent" android:layout_width="match_parent">
+    <RelativeLayout
+
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        tools:context="com.artfonapps.clientrestore.MainActivity" android:background="@color/reStore_pink_dark">
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"  android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp" android:layout_marginRight="10dp"
+            android:layout_height="match_parent" android:background="@color/reStore_white" android:gravity="center" android:padding="10dp">
+            <include layout="@layout/content_main"  />
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent" android:visibility="gone" android:id="@+id/disableLayout"
+            android:layout_height="match_parent" android:background="@color/reStore_white" android:padding="20dp">
+            <TextView
+                android:layout_width="match_parent" android:id="@+id/textAutorize"
+                android:layout_height="wrap_content" android:gravity="center" android:text="Авторизация..."/>
+            <ProgressBar android:layout_centerHorizontal="true" android:layout_centerVertical="true" android:layout_centerInParent="true"
+                android:id="@+id/login_progress"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_below="@+id/textAutorize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:visibility="visible"/>
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent" android:visibility="gone" android:id="@+id/endLayout"
+            android:layout_height="match_parent" android:background="@color/reStore_white" android:gravity="center">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center" android:textColor="@color/reStore_black"
+                android:textSize="20dp"
+                android:text="Текущих задач нет"/>
+        </RelativeLayout>
+    </RelativeLayout>
+    <com.artfonapps.clientrestore.views.utils.VerticalViewPager
+        android:layout_width="match_parent" android:id="@+id/vvp"
+        android:layout_height="match_parent">
+
+    </com.artfonapps.clientrestore.views.utils.VerticalViewPager>
+</RelativeLayout>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="5dp"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:paddingTop="5dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.artfonapps.clientrestore.MainActivity"
+    tools:showIn="@layout/activity_main">
+    <!--показывать еще номер документа и имя клиента-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_marginTop="10dp"
+            android:layout_height="wrap_content">
+            <TextView android:textColor="@color/reStore_black"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:textSize="17dp"
+                android:shadowColor="@color/reStore_pink"
+                android:shadowDx="1" android:shadowDy="1"
+                android:shadowRadius="3"
+                android:text="Клиент"/>
+            <TextView
+                android:id="@+id/taskClient" android:textColor="@color/reStore_black"
+                android:layout_width="match_parent"
+                android:textSize="17dp"
+                android:layout_weight="3"
+                android:shadowColor="@color/reStore_pink"
+                android:shadowDx="1" android:shadowDy="1"
+                android:shadowRadius="3"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_marginTop="10dp"
+            android:layout_height="wrap_content">
+            <TextView android:textColor="@color/reStore_black"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:textSize="17dp"
+                android:shadowColor="@color/reStore_pink"
+                android:shadowDx="1" android:shadowDy="1"
+                android:shadowRadius="3"
+                android:text="Документ"/>
+            <TextView
+                android:id="@+id/taskDocument"  android:textColor="@color/reStore_black"
+                android:layout_width="match_parent"
+                android:textSize="17dp"
+                android:layout_weight="3"
+                android:shadowColor="@color/reStore_pink"
+                android:shadowDx="1" android:shadowDy="1"
+                android:shadowRadius="3"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_marginTop="10dp"
+            android:layout_height="wrap_content">
+
+            <TextView android:textColor="@color/reStore_black"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:textSize="17dp"
+                android:shadowColor="@color/reStore_pink"
+                android:shadowDx="1" android:shadowDy="1"
+                android:shadowRadius="3"
+                android:text="Точка"/>
+            <LinearLayout android:orientation="horizontal"
+                android:layout_width="match_parent" android:layout_weight="3"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/point"  android:textColor="@color/reStore_black"
+                    android:layout_width="match_parent"
+                    android:textSize="17dp"
+                    android:layout_weight="1"
+                    android:shadowColor="@color/reStore_pink"
+                    android:shadowDx="1" android:shadowDy="1"
+                    android:shadowRadius="3"
+                    android:layout_height="wrap_content"/>
+                <ImageButton
+                    android:layout_marginLeft="10dp" android:id="@+id/callPoint"
+                    android:layout_marginRight="10dp"  android:layout_gravity="center_vertical"
+                    android:layout_width="30dp" android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:layout_height="30dp" android:src="@drawable/phone_blue" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_marginTop="10dp"
+            android:layout_height="wrap_content">
+            <TextView android:textColor="@color/reStore_black"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:textSize="17dp"
+                android:shadowColor="@color/reStore_pink"
+                android:shadowDx="1" android:shadowDy="1"
+                android:shadowRadius="3"
+                android:text="Адрес"/>
+            <TextView
+                android:id="@+id/taskAddress"  android:textColor="@color/reStore_black"
+                android:layout_width="match_parent"
+                android:textSize="17dp"
+                android:layout_weight="3"
+                android:shadowColor="@color/reStore_pink"
+                android:shadowDx="1" android:shadowDy="1"
+                android:shadowRadius="3"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="10dp">
+            <TextView android:textColor="@color/reStore_black"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:textSize="17dp"
+                android:shadowColor="@color/reStore_pink"
+                android:shadowDx="1" android:shadowDy="1"
+                android:shadowRadius="3"
+                android:text="Дата и время прибытия"/>
+            <TextView
+                android:id="@+id/taskDescription" android:textColor="@color/reStore_black"
+                android:layout_width="match_parent"
+                android:layout_weight="3"
+                android:textSize="17dp"
+                android:shadowColor="@color/reStore_pink"
+                android:shadowDx="1" android:shadowDy="1"
+                android:shadowRadius="3"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <RelativeLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"  android:gravity="center" android:layout_weight="3">
+    <com.dd.CircularProgressButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="100dp" android:paddingLeft="20dp" android:paddingRight="20dp"
+        android:textColor="@color/reStore_white"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        app:cpb_cornerRadius="8dp"
+        app:cpb_iconComplete="@drawable/ic_action_accept"
+        app:cpb_iconError="@drawable/ic_action_cancel"
+        app:cpb_textIdle="Прибытие на место"
+
+        />
+        <!-- текст кнопки - текущий этап -->
+    </RelativeLayout>
+
+</LinearLayout>
