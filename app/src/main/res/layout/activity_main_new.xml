@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
 
-        tools:context="com.artfonapps.clientrestore.MainActivity" android:background="@color/reStore_pink_dark">
+        tools:context=".views.MainActivity" android:background="@color/reStore_pink_dark">
 
 
         <RelativeLayout

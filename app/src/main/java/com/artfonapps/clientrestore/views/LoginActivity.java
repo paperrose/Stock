@@ -1,31 +1,27 @@
-package com.artfonapps.clientrestore;
+package com.artfonapps.clientrestore.views;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Activity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.artfonapps.clientrestore.JSONParser;
+import com.artfonapps.clientrestore.R;
 import com.dd.CircularProgressButton;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 
 public class LoginActivity extends AppCompatActivity {

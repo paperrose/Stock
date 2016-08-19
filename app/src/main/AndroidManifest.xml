@@ -37,9 +37,16 @@
         <activity android:theme="@style/AppTheme"
             android:label="@string/app_name"
 
-            android:name="com.artfonapps.clientrestore.MainActivity"
+            android:name=".views.MainActivity"
 
             android:excludeFromRecents="true">
+
+        </activity>
+
+
+        <activity android:theme="@style/AppTheme" android:label="@string/app_name"
+            android:name="com.artfonapps.clientrestore.views.StartActivity"
+            android:excludeFromRecents="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -48,14 +55,7 @@
 
 
         <activity android:theme="@style/AppTheme" android:label="@string/app_name"
-            android:name="com.artfonapps.clientrestore.views.StartActivity"
-            android:excludeFromRecents="true" >
-
-        </activity>
-
-
-        <activity android:theme="@style/AppTheme" android:label="@string/app_name"
-            android:name="com.artfonapps.clientrestore.LoginActivity" />
+            android:name=".views.LoginActivity" />
 
 
         <meta-data android:name="AA_DB_NAME" android:value="PointsAA.db" />

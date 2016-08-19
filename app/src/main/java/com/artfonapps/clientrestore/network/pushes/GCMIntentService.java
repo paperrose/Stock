@@ -21,7 +21,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.artfonapps.clientrestore.JSONParser;
-import com.artfonapps.clientrestore.MainActivity;
+import com.artfonapps.clientrestore.views.MainActivity;
 import com.artfonapps.clientrestore.R;
 
 import com.artfonapps.clientrestore.db.AlertPointItem;

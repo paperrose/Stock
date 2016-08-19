@@ -1,7 +1,9 @@
-package com.artfonapps.clientrestore;
+package com.artfonapps.clientrestore.dummy;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.artfonapps.clientrestore.R;
 
 public class DummyActivity extends AppCompatActivity {
 

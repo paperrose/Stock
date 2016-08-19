@@ -1,13 +1,11 @@
 package com.artfonapps.clientrestore.views.adapters;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +15,10 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.artfonapps.clientrestore.MainActivity;
 import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Point;
-import com.artfonapps.clientrestore.network.events.ChangeCurPointEvent;
+import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
 import com.squareup.otto.Produce;
 

@@ -1,5 +1,6 @@
-package com.artfonapps.clientrestore.network.events;
+package com.artfonapps.clientrestore.network.events.requests;
 
+import com.artfonapps.clientrestore.network.events.BaseEvent;
 import com.artfonapps.clientrestore.network.requests.CookieStorage;
 
 import org.json.JSONException;

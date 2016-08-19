@@ -1,4 +1,4 @@
-package com.artfonapps.clientrestore;
+package com.artfonapps.clientrestore.views;
 
 import android.Manifest;
 import android.animation.Animator;
@@ -40,6 +40,8 @@ import android.widget.Toast;
 
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
+import com.artfonapps.clientrestore.JSONParser;
+import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.views.adapters.AlertPointAdapter;
 import com.artfonapps.clientrestore.views.adapters.OrdersAdapter;
 import com.artfonapps.clientrestore.views.adapters.PointsAdapter;

@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.artfonapps.clientrestore.db.AlertPointItem;
-import com.artfonapps.clientrestore.MainActivity;
+import com.artfonapps.clientrestore.views.MainActivity;
 import com.artfonapps.clientrestore.R;
 
 import java.util.ArrayList;

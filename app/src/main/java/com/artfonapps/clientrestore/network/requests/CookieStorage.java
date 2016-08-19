@@ -1,6 +1,6 @@
 package com.artfonapps.clientrestore.network.requests;
 
-import com.artfonapps.clientrestore.MainActivity;
+import com.artfonapps.clientrestore.views.MainActivity;
 import com.artfonapps.clientrestore.views.StartActivity;
 
 import java.util.ArrayList;

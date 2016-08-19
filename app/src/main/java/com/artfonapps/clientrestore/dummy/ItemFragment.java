@@ -1,4 +1,4 @@
-package com.artfonapps.clientrestore;
+package com.artfonapps.clientrestore.dummy;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -10,10 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.artfonapps.clientrestore.dummy.DummyContent;
+import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.dummy.DummyContent.DummyItem;
-
-import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -69,7 +67,7 @@ public class ItemFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setAdapter(new DummyRecyclerViewAdapter(DummyContent.ITEMS, mListener));
         }
         return view;
     }

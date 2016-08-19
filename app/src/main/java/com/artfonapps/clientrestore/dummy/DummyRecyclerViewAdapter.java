@@ -1,4 +1,4 @@
-package com.artfonapps.clientrestore;
+package com.artfonapps.clientrestore.dummy;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -6,7 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.artfonapps.clientrestore.ItemFragment.OnListFragmentInteractionListener;
+import com.artfonapps.clientrestore.dummy.ItemFragment.OnListFragmentInteractionListener;
+import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.dummy.DummyContent.DummyItem;
 
 import java.util.List;
@@ -16,12 +17,12 @@ import java.util.List;
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
+public class DummyRecyclerViewAdapter extends RecyclerView.Adapter<DummyRecyclerViewAdapter.ViewHolder> {
 
     private final List<DummyItem> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public MyItemRecyclerViewAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
+    public DummyRecyclerViewAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }

@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.style.StrikethroughSpan;
@@ -17,7 +16,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.artfonapps.clientrestore.MainActivity;
 import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.db.Point;
