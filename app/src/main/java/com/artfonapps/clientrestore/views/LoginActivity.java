@@ -181,7 +181,7 @@ public class LoginActivity extends AppCompatActivity {
             } else {
                 phoneNumber = tempPhone;
                 storePhoneNum();
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                Intent intent = new Intent(LoginActivity.this, StartActivity.class);
                 intent.putExtra("pass", edit.getText().toString());
                 SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
                 SharedPreferences.Editor editor = prefs.edit();

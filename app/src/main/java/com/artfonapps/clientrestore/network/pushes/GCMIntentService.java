@@ -21,11 +21,14 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.artfonapps.clientrestore.JSONParser;
+import com.artfonapps.clientrestore.models.Order;
+import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
 import com.artfonapps.clientrestore.views.MainActivity;
 import com.artfonapps.clientrestore.R;
 
 import com.artfonapps.clientrestore.models.AlertPointItem;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.squareup.otto.Produce;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,6 +82,8 @@ public class GCMIntentService extends IntentService {
             Log.e("Push", description);
             if (jobj.getString("type").equals("new_order")) {
                 showToastNew(jobj.getString("order_id"), description);
+            } else if (jobj.getString("type").equals("remove")) {
+                produceDeleteEvent(Integer.parseInt(jobj.getString("order_id")));
             } else {
 
             }
@@ -92,6 +97,10 @@ public class GCMIntentService extends IntentService {
 
     }
 
+    @Produce
+    public LocalDeleteEvent produceDeleteEvent(int orderId)  {
+        return new LocalDeleteEvent().setCurOrder(orderId).setFromPush(true);
+    }
 
     public void showToastNew(final String order_id, final String m_desc){
         handler.post(new Runnable() {

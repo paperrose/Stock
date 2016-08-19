@@ -23,6 +23,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.activeandroid.query.Delete;
 import com.artfonapps.clientrestore.JSONParser;
 import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.constants.Fields;
@@ -298,7 +299,7 @@ public class StartActivity extends AppCompatActivity {
 
     @Subscribe
     public void onLocalDeleteEvent(LocalDeleteEvent localDeleteEvent) {
-        int orderId = localDeleteEvent.getCurOrder().getIdListTraffic();
+        int orderId = localDeleteEvent.getCurOrder();
         Iterator<Order> orderIterator = orders.iterator();
         while (orderIterator.hasNext()) {
             Order current = orderIterator.next();
@@ -307,6 +308,7 @@ public class StartActivity extends AppCompatActivity {
         }
         try {
             Helper.deleteOrder(orderId);
+            if (localDeleteEvent.isFromPush()) return;
             contentValues = new ContentValues();
             contentValues.put(Fields.ID, orderId);
             contentValues.put(Fields.ACCEPTED, 0);
@@ -467,6 +469,23 @@ public class StartActivity extends AppCompatActivity {
             return true;
 
         }
+
+        if (id == R.id.action_logout) {
+            // (new LogTask()).execute(Methods.refresh);
+            SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("PROPERTY_MOBILE", "");
+            editor.putString("PASS_CODE", "");
+            editor.putString("CUR_SERVER", JSONParser.domainName);
+            editor.apply();
+            Intent intent = new Intent(StartActivity.this, LoginActivity.class);
+            startActivity(intent);
+            new Delete().from(Point.class).execute();
+            finish();
+            return true;
+
+        }
+
         return super.onOptionsItemSelected(item);
     }
 

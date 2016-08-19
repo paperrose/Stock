@@ -144,7 +144,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
 
     @Produce
     public LocalDeleteEvent produceDeleteEvent(Order order)  {
-        return new LocalDeleteEvent().setCurOrder(order);
+        return new LocalDeleteEvent().setCurOrder(order.getIdListTraffic()).setFromPush(false);
     }
 
 

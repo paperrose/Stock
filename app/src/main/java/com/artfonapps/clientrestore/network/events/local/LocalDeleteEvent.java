@@ -7,16 +7,27 @@ import com.artfonapps.clientrestore.network.events.BaseEvent;
  * Created by Emil on 19.08.2016.
  */
 public class LocalDeleteEvent extends BaseEvent {
-    public Order getCurOrder() {
-        return order;
+    public Integer getCurOrder() {
+        return orderId;
     }
 
-    public LocalDeleteEvent setCurOrder(Order order) {
-        this.order = order;
+    public LocalDeleteEvent setCurOrder(Integer orderId) {
+        this.orderId = orderId;
         return this;
     }
 
-    private Order order;
+    private int orderId;
+
+    public boolean isFromPush() {
+        return fromPush;
+    }
+
+    public LocalDeleteEvent setFromPush(boolean fromPush) {
+        this.fromPush = fromPush;
+        return this;
+    }
+
+    private boolean fromPush;
 
     public LocalDeleteEvent() {
         super();
