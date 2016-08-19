@@ -266,7 +266,7 @@ public class StartActivity extends AppCompatActivity {
     @Subscribe
     public void onChangeCurPointEvent(ChangeCurPointEvent changeCurPointEvent) {
         currentPoint = changeCurPointEvent.getCurPoint();
-        refreshViews();
+        refresh();
     }
 
     @Subscribe
@@ -324,6 +324,21 @@ public class StartActivity extends AppCompatActivity {
 
     @Subscribe
     public void onDeleteEvent(DeleteEvent deleteEvent) {
+        points.clear();
+        points.addAll(Helper.getPoints());
+        orders.clear();
+        try {
+            orders.addAll(Helper.getOrders(points));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        currentPoint = Helper.getCurPoint();
+        if (currentPoint == null) {
+            currentPoint =
+                    currentOrder != null ?
+                            Helper.getFirstPointInOrder(currentOrder.getIdListTraffic()) :
+                            Helper.getFirstPoint();
+        }
         refresh();
     }
 

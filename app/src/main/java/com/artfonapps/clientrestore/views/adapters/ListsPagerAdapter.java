@@ -67,7 +67,7 @@ public class ListsPagerAdapter extends PagerAdapter {
         View itemView = layoutInflater.inflate(R.layout.list_layout, container, false);
         RecyclerView itemsList = (RecyclerView)itemView.findViewById(R.id.items);
         mLayoutManager = new LinearLayoutManager(context);
-        mLayoutManager.setStackFromEnd(true);
+       // mLayoutManager.setStackFromEnd(true);
         // mLayoutManager.setReverseLayout(true);
 
 
@@ -77,7 +77,7 @@ public class ListsPagerAdapter extends PagerAdapter {
             itemsList.setAdapter(ordersAdapter);
          //   itemsList.setDividerHeight(3);
         }
-        itemsList.setHasFixedSize(true);
+        //itemsList.setHasFixedSize(true);
         itemsList.setLayoutManager(mLayoutManager);
         //((TextView)itemView.findViewById(R.id.text)).setText(pages.get(position));
         container.addView(itemView);
