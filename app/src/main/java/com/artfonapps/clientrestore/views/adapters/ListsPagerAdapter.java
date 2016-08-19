@@ -2,6 +2,8 @@ package com.artfonapps.clientrestore.views.adapters;
 
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +24,7 @@ public class ListsPagerAdapter extends PagerAdapter {
     LayoutInflater layoutInflater;
     PointsAdapter pointsAdapter;
     OrdersAdapter ordersAdapter;
+    private LinearLayoutManager mLayoutManager;
 
     public ListsPagerAdapter setPoints(List<Point> points) {
        // this.points.clear();
@@ -44,8 +47,8 @@ public class ListsPagerAdapter extends PagerAdapter {
     public ListsPagerAdapter(Context context, List<Integer> ids, List<Point> points, List<Order> orders) {
         this.context = context;
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        pointsAdapter = new PointsAdapter(context, R.layout.point_item, points);
-        ordersAdapter = new OrdersAdapter(context, R.layout.order_item, orders);
+        pointsAdapter = new PointsAdapter(context, points);
+        ordersAdapter = new OrdersAdapter(context, orders);
         this.ids = ids;
     }
 
@@ -62,13 +65,20 @@ public class ListsPagerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         View itemView = layoutInflater.inflate(R.layout.list_layout, container, false);
-        ListView itemsList = (ListView)itemView.findViewById(R.id.items);
+        RecyclerView itemsList = (RecyclerView)itemView.findViewById(R.id.items);
+        mLayoutManager = new LinearLayoutManager(context);
+        mLayoutManager.setStackFromEnd(true);
+        // mLayoutManager.setReverseLayout(true);
+
+
         if (ids.get(position) == R.layout.point_item) {
             itemsList.setAdapter(pointsAdapter);
-        } else {
+        } else if (ids.get(position) == R.layout.order_item) {
             itemsList.setAdapter(ordersAdapter);
-            itemsList.setDividerHeight(3);
+         //   itemsList.setDividerHeight(3);
         }
+        itemsList.setHasFixedSize(true);
+        itemsList.setLayoutManager(mLayoutManager);
         //((TextView)itemView.findViewById(R.id.text)).setText(pages.get(position));
         container.addView(itemView);
         return itemView;

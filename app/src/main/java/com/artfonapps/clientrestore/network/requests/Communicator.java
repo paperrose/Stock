@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.network.events.requests.AcceptEvent;
 import com.artfonapps.clientrestore.network.events.requests.ClickEvent;
+import com.artfonapps.clientrestore.network.events.requests.DeleteEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoadPointsEvent;
 import com.artfonapps.clientrestore.network.events.local.LogEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
@@ -110,6 +111,11 @@ public class Communicator {
         return new LogEvent(body);
     }
 
+    @Produce
+    public DeleteEvent produceDeleteEvent() {
+        return new DeleteEvent();
+    }
+
 
     @Produce
     public RejectEvent produceRejectEvent(ResponseBody body) throws IOException, JSONException {
@@ -133,10 +139,10 @@ public class Communicator {
                     login(vars);
                     break;
                 case Methods.load_points:
-                    reqJob(vars);
+                    job(vars);
                     break;
                 case Methods.click_point:
-                    req(vars);
+                    jobPoint(vars);
                     break;
                 case Methods.remove:
                     accept(Methods.remove, vars);
@@ -185,6 +191,9 @@ public class Communicator {
                                     .post(produceLoadPointsEvent(response.body()));
                             break;
                         case Methods.remove:
+                            BusProvider.getInstance()
+                                    .post(produceDeleteEvent());
+
                             break;
                         default:
                             break;
@@ -218,7 +227,7 @@ public class Communicator {
     }
 
 
-    public void req(ContentValues values) throws JSONException {
+    public void jobPoint(ContentValues values) throws JSONException {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
         Call<ResponseBody> response = communicatorInterface.reqTask(
                 CookieStorage.getInstance().getArrayList().get(0).toString(),
@@ -230,7 +239,7 @@ public class Communicator {
         response.enqueue(commonCommunicate(Methods.click_point));
     }
 
-    public void reqJob(ContentValues values) throws JSONException {
+    public void job(ContentValues values) throws JSONException {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
         Call<ResponseBody> response = communicatorInterface.reqJobTask(
                 CookieStorage.getInstance().getArrayList().get(0).toString(),

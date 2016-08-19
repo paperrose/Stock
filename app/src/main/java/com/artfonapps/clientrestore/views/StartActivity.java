@@ -249,7 +249,8 @@ public class StartActivity extends AppCompatActivity {
                     AlertDialog alert = builder.create();
                     alert.show();
                 } else {
-                    onSuccessClick(currentPoint);
+                    if (currentPoint != null)
+                        onSuccessClick(currentPoint);
                 }
             }
         });
@@ -308,10 +309,10 @@ public class StartActivity extends AppCompatActivity {
             Helper.deleteOrder(orderId);
             contentValues = new ContentValues();
             contentValues.put(Fields.ID, orderId);
-            contentValues.put(Fields.ACCEPTED, 1);
+            contentValues.put(Fields.ACCEPTED, 0);
             logger.log(Methods.remove, generateDefaultContentValues());
             communicator.communicate(Methods.remove, contentValues, false);
-            refresh();
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -320,9 +321,8 @@ public class StartActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    public void onDeleteEvent(DeleteEvent localDeleteEvent) {
+    public void onDeleteEvent(DeleteEvent deleteEvent) {
         refresh();
-       //(new AcceptTask()).execute(order_id, "0");
     }
 
     @Subscribe
@@ -358,8 +358,14 @@ public class StartActivity extends AppCompatActivity {
     @Subscribe
     public void onLoadPointsEvent(LoadPointsEvent loadPointsEvent){
         JSONObject res = loadPointsEvent.getResponseObject();
+
         try {
+
             Helper.updatePoints(res.getJSONObject("result").getJSONArray("points"));
+            points.clear();
+            points.addAll(Helper.getPoints());
+            orders.clear();
+            orders.addAll(Helper.getOrders(points));
             currentPoint = Helper.getCurPoint();
             if (currentPoint == null) {
                 currentPoint =
@@ -367,6 +373,7 @@ public class StartActivity extends AppCompatActivity {
                                 Helper.getFirstPointInOrder(currentOrder.getIdListTraffic()) :
                                 Helper.getFirstPoint();
             }
+
             refresh();
         } catch (JSONException e) {
             e.printStackTrace();
@@ -478,7 +485,10 @@ public class StartActivity extends AppCompatActivity {
 
     private void refreshViews() {
         if (currentPoint == null) {
+            (findViewById(R.id.endLayout)).setVisibility(View.VISIBLE);
             return;
+        } else {
+            (findViewById(R.id.endLayout)).setVisibility(View.GONE);
         }
         targetLocation.setLatitude(currentPoint.getLat());
         targetLocation.setLongitude(currentPoint.getLng());

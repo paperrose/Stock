@@ -577,10 +577,10 @@ public class MainActivity extends AppCompatActivity {
                 points.addAll(Point.points());
                 if (!hasCur && points.size() > 0) points.get(0).setCurItem(true);
                 ListView lv = (ListView) findViewById(R.id.left_drawer_list);
-                lv.setAdapter(new PointsAdapter(MainActivity.this, R.layout.point_item, points));
+              //  lv.setAdapter(new PointsAdapter(MainActivity.this, R.layout.point_item, points));
 
                 ListView lv2 = (ListView) findViewById(R.id.right_drawer_list);
-                lv2.setAdapter(new OrdersAdapter(MainActivity.this, R.layout.order_item, orders));
+              //  lv2.setAdapter(new OrdersAdapter(MainActivity.this, R.layout.order_item, orders));
 
 
                 lastClick = System.currentTimeMillis();
@@ -744,10 +744,10 @@ public class MainActivity extends AppCompatActivity {
                 points.addAll(Point.points());
                 if (!hasCur && points.size() > 0) points.get(0).setCurItem(true);
                 ListView lv = (ListView) findViewById(R.id.left_drawer_list);
-                lv.setAdapter(new PointsAdapter(MainActivity.this, R.layout.point_item, points));
+           //     lv.setAdapter(new PointsAdapter(MainActivity.this, R.layout.point_item, points));
 
                 ListView lv2 = (ListView) findViewById(R.id.right_drawer_list);
-                lv2.setAdapter(new OrdersAdapter(MainActivity.this, R.layout.order_item, orders));
+          //      lv2.setAdapter(new OrdersAdapter(MainActivity.this, R.layout.order_item, orders));
 
 
                 boolean flag = true;

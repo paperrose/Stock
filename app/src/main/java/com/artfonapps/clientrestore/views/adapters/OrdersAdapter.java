@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.style.StrikethroughSpan;
@@ -31,57 +32,44 @@ import java.util.List;
 /**
  * Created by paperrose on 11.07.2016.
  */
-public class OrdersAdapter extends ArrayAdapter<Order> {
+public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder> {
 
     public List<Order> orders;
     public AppCompatActivity mContext;
     private static final StrikethroughSpan STRIKE_THROUGH_SPAN = new StrikethroughSpan();
-
+    LayoutInflater inflater;
     //TODO change with recyclerView
 
-    public OrdersAdapter(Context context, int resource, List<Order> orders) {
-        super(context, resource, orders);
+    public OrdersAdapter(Context context, List<Order> orders) {
         mContext = (AppCompatActivity)context;
         this.orders = new ArrayList<>();
         this.orders.addAll(orders);
+        inflater = LayoutInflater.from(context);
     }
 
     @Override
-    public int getCount() {
+    public int getItemCount() {
         return orders.size();
     }
 
     public void refresh(List<Order> orders)
     {
-        this.orders.clear();
-        this.orders.addAll(orders);
+        this.orders = orders;
         notifyDataSetChanged();
     }
 
-    @Override
-    public Order getItem(int i) {
-        return orders.get(i);
-    }
-
-
-    public int getItemIndex(Order item) {
-        return orders.indexOf(item);
-    }
-
 
     @Override
-    public long getItemId(int i) {
-        return i;
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View v = inflater.inflate(R.layout.order_item, parent, false);
+        ViewHolder vh = new ViewHolder(v);
+        return vh;
     }
 
     @Override
-    public View getView(final int i, View view, ViewGroup viewGroup) {
-        LayoutInflater inflater = mContext.getLayoutInflater();
-        if (view == null) {
-            view = inflater.inflate(R.layout.order_item, viewGroup, false);
-        }
-        Order p = orders.get(i);
-        LinearLayout card = (LinearLayout)view.findViewById(R.id.card);
+    public void onBindViewHolder(final OrdersAdapter.ViewHolder holder, int position) {
+        Order p = orders.get(position);
+        holder.card.removeAllViews();
         for (Point point : p.points) {
             TextView tv = new TextView(mContext);
             tv.setTextColor(mContext.getResources().getColor(R.color.cpb_white));
@@ -97,13 +85,13 @@ public class OrdersAdapter extends ArrayAdapter<Order> {
             } else {
                 tv.setText(point.getPoint());
             }
-            card.addView(tv);
+            holder.card.addView(tv);
         }
-        card.setBackgroundResource(p.isCurrentOrder() ? R.drawable.order_item_drawable : R.color.reStore_pink_light);
-        ImageButton ib = (ImageButton)view.findViewById(R.id.remove_order);
-        ib.setOnClickListener(new View.OnClickListener() {
+        holder.removeOrder.setTag(position);
+        holder.backLayout.setBackgroundResource(p.isCurrentOrder() ? R.drawable.order_item_drawable : R.color.reStore_pink_light);
+        holder.removeOrder.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(final View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                 builder.setTitle("Предупреждение")
                         .setMessage("Удалить заказ?")
@@ -112,17 +100,17 @@ public class OrdersAdapter extends ArrayAdapter<Order> {
                                     public void onClick(DialogInterface dialog, int id) {
                                         dialog.cancel();
                                     }
-                        })
+                                })
                         .setPositiveButton("Да",
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         //TODO remove this after refactoring
                                         if (mContext instanceof MainActivity) {
-                                            ((MainActivity)mContext).removeLog(Integer.toString(orders.get(i).idListTraffic));
-                                            ((MainActivity)mContext).declineTask(Integer.toString(orders.get(i).idListTraffic));
+                                            ((MainActivity)mContext).removeLog(Integer.toString(orders.get((Integer)v.getTag()).idListTraffic));
+                                            ((MainActivity)mContext).declineTask(Integer.toString(orders.get((Integer)v.getTag()).idListTraffic));
                                         } else if (mContext instanceof StartActivity) {
                                             BusProvider.getInstance()
-                                                    .post(produceDeleteEvent(orders.get(i)));
+                                                    .post(produceDeleteEvent(orders.get((Integer)v.getTag())));
                                         }
                                         //TODO deleteEvent
                                     }
@@ -132,7 +120,25 @@ public class OrdersAdapter extends ArrayAdapter<Order> {
                 alert.show();
             }
         });
-        return view;
+    }
+
+    @Override
+    public long getItemId(int i) {
+        return i;
+    }
+
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+
+        ImageButton removeOrder;
+        LinearLayout card;
+        LinearLayout backLayout;
+        public ViewHolder(View view) {
+            super(view);
+            removeOrder = (ImageButton) view.findViewById(R.id.remove_order);
+            card = (LinearLayout)view.findViewById(R.id.card);
+            backLayout = (LinearLayout)view.findViewById(R.id.backLayout);
+        }
     }
 
 
