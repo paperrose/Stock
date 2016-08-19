@@ -16,9 +16,14 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.artfonapps.clientrestore.db.Order;
+import com.artfonapps.clientrestore.models.Order;
 import com.artfonapps.clientrestore.R;
-import com.artfonapps.clientrestore.db.Point;
+import com.artfonapps.clientrestore.models.Point;
+import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
+import com.artfonapps.clientrestore.network.utils.BusProvider;
+import com.artfonapps.clientrestore.views.MainActivity;
+import com.artfonapps.clientrestore.views.StartActivity;
+import com.squareup.otto.Produce;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +36,8 @@ public class OrdersAdapter extends ArrayAdapter<Order> {
     public List<Order> orders;
     public AppCompatActivity mContext;
     private static final StrikethroughSpan STRIKE_THROUGH_SPAN = new StrikethroughSpan();
+
+    //TODO change with recyclerView
 
     public OrdersAdapter(Context context, int resource, List<Order> orders) {
         super(context, resource, orders);
@@ -109,8 +116,14 @@ public class OrdersAdapter extends ArrayAdapter<Order> {
                         .setPositiveButton("Да",
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                   //     mContext.removeLog(Integer.toString(points.get(i).idListTraffic));
-                                   //     mContext.declineTask(Integer.toString(points.get(i).idListTraffic));
+                                        //TODO remove this after refactoring
+                                        if (mContext instanceof MainActivity) {
+                                            ((MainActivity)mContext).removeLog(Integer.toString(orders.get(i).idListTraffic));
+                                            ((MainActivity)mContext).declineTask(Integer.toString(orders.get(i).idListTraffic));
+                                        } else if (mContext instanceof StartActivity) {
+                                            BusProvider.getInstance()
+                                                    .post(produceDeleteEvent(orders.get(i)));
+                                        }
                                         //TODO deleteEvent
                                     }
                                 });
@@ -120,6 +133,12 @@ public class OrdersAdapter extends ArrayAdapter<Order> {
             }
         });
         return view;
+    }
+
+
+    @Produce
+    public LocalDeleteEvent produceDeleteEvent(Order order)  {
+        return new LocalDeleteEvent().setCurOrder(order);
     }
 
 

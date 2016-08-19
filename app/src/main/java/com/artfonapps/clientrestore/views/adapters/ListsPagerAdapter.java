@@ -7,14 +7,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.artfonapps.clientrestore.R;
-import com.artfonapps.clientrestore.db.Order;
-import com.artfonapps.clientrestore.db.Point;
-import com.artfonapps.clientrestore.views.StartActivity;
+import com.artfonapps.clientrestore.models.Order;
+import com.artfonapps.clientrestore.models.Point;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

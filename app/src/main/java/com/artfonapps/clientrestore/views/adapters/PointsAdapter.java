@@ -16,10 +16,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.artfonapps.clientrestore.R;
-import com.artfonapps.clientrestore.db.Helper;
-import com.artfonapps.clientrestore.db.Point;
+import com.artfonapps.clientrestore.models.Helper;
+import com.artfonapps.clientrestore.models.Point;
 import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
+import com.artfonapps.clientrestore.views.MainActivity;
+import com.artfonapps.clientrestore.views.StartActivity;
 import com.squareup.otto.Produce;
 
 import java.util.ArrayList;
@@ -29,6 +31,8 @@ import java.util.List;
  * Created by paperrose on 01.04.2016.
  */
 public class PointsAdapter extends ArrayAdapter<Point> {
+
+    //TODO change with recyclerView!!!
 
     AppCompatActivity context;
     private List<Point> items;
@@ -99,7 +103,6 @@ public class PointsAdapter extends ArrayAdapter<Point> {
             holder.contact = (TextView) view.findViewById(R.id.contact);
             holder.call = (ImageButton) view.findViewById(R.id.phoneCall);
             holder.expand = (ImageButton) view.findViewById(R.id.expand);
-           // holder.ll = (LinearLayout)view.findViewById(R.id.extendedPart);
             view.setTag(holder);
             view.setTag(R.id.point, holder.point);
             view.setTag(R.id.typePoint, holder.type);
@@ -110,7 +113,6 @@ public class PointsAdapter extends ArrayAdapter<Point> {
             view.setTag(R.id.client, holder.client);
             view.setTag(R.id.expand, holder.expand);
             view.setTag(R.id.phoneCall, holder.call);
-            //view.setTag(R.id.extendedPart, holder.ll);
         } else {
             holder = (PointHolder)view.getTag();
         }
@@ -188,13 +190,17 @@ public class PointsAdapter extends ArrayAdapter<Point> {
                     p2.setCurItem(false);
                 p0.setCurItem(true);
                 notifyDataSetChanged();
-                Intent intent2 = new Intent("refresh_push_count");
-                intent2.putExtra("type", "change");
-                intent2.putExtra("id", Integer.toString(p0.getIdListTrafficRoute()));
-                intent2.putExtra("traffic_id", Integer.toString(p0.getIdListTraffic()));
-                LocalBroadcastManager.getInstance(context).sendBroadcast(intent2);
-                BusProvider.getInstance()
-                        .post(produceChangeCurPointEvent(p0));
+                if (context instanceof MainActivity) {
+                    //TODO remove this after refactoring
+                    Intent intent2 = new Intent("refresh_push_count");
+                    intent2.putExtra("type", "change");
+                    intent2.putExtra("id", Integer.toString(p0.getIdListTrafficRoute()));
+                    intent2.putExtra("traffic_id", Integer.toString(p0.getIdListTraffic()));
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(intent2);
+                } else if (context instanceof StartActivity) {
+                    BusProvider.getInstance()
+                            .post(produceChangeCurPointEvent(p0));
+                }
                 return false;
             }
         });

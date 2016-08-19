@@ -13,6 +13,9 @@ import java.io.InputStreamReader;
 /**
  * Created by paperrose on 27.03.2015.
  */
+
+//TODO delete after refactoring
+
 public class JSONStreamReader {
     public static void readJsonStreamToTr(String jsonStr, JSONArray arr) throws IOException {
         JsonReader reader = null;

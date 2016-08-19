@@ -4,9 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
 
-import com.artfonapps.clientrestore.network.utils.Communicator;
+import com.artfonapps.clientrestore.network.requests.Communicator;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 

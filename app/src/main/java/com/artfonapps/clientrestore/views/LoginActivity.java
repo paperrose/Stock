@@ -24,6 +24,8 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+//TODO refactor with retrofit
+
 public class LoginActivity extends AppCompatActivity {
     boolean isSMSCode = false;
     CircularProgressButton next;

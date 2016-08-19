@@ -1,4 +1,4 @@
-package com.artfonapps.clientrestore.network.utils;
+package com.artfonapps.clientrestore.network.requests;
 
 import android.content.ContentValues;
 
@@ -11,9 +11,8 @@ import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
 import com.artfonapps.clientrestore.network.events.local.LogoutEvent;
 import com.artfonapps.clientrestore.network.events.requests.RejectEvent;
 import com.artfonapps.clientrestore.network.logger.Methods;
-import com.artfonapps.clientrestore.network.RequestInterface;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
-import com.artfonapps.clientrestore.network.requests.CookieStorage;
+import com.artfonapps.clientrestore.network.utils.BusProvider;
 import com.squareup.otto.Produce;
 
 import org.json.JSONException;
@@ -38,6 +37,8 @@ public class Communicator {
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
 
+    private static final String COOKIE_HEADER = "Cookie";
+
     private static Retrofit retrofit;
     public static final Communicator INSTANCE = new Communicator();
 
@@ -53,7 +54,7 @@ public class Communicator {
             Request request = chain.request();
             if (this.cookie != null) {
                 request = request.newBuilder()
-                        .header("Cookie", this.cookie)
+                        .header(COOKIE_HEADER, this.cookie)
                         .build();
             }
             return chain.proceed(request);
@@ -71,7 +72,6 @@ public class Communicator {
         retrofit = new Retrofit.Builder()
                 .baseUrl(debugDomainName)
                 .callFactory(okHttpClient)
-                //.addConverterFactory(null)
                 .build();
     }
 
@@ -124,10 +124,10 @@ public class Communicator {
             }
             switch (method) {
                 case Methods.accept:
-                    accept(vars);
+                    accept(Methods.accept, vars);
                     break;
                 case Methods.reject:
-                    accept(vars);
+                    accept(Methods.reject, vars);
                     break;
                 case Methods.login:
                     login(vars);
@@ -137,6 +137,9 @@ public class Communicator {
                     break;
                 case Methods.click_point:
                     req(vars);
+                    break;
+                case Methods.remove:
+                    accept(Methods.remove, vars);
                     break;
                 default:
                     break;
@@ -180,6 +183,8 @@ public class Communicator {
                         case Methods.load_points:
                             BusProvider.getInstance()
                                     .post(produceLoadPointsEvent(response.body()));
+                            break;
+                        case Methods.remove:
                             break;
                         default:
                             break;
@@ -234,7 +239,7 @@ public class Communicator {
         response.enqueue(commonCommunicate(Methods.load_points));
     }
 
-    public void accept(ContentValues values) throws JSONException {
+    public void accept(String method, ContentValues values) throws JSONException {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
         String accepted = values.getAsString(Fields.ACCEPTED);
         Call<ResponseBody> response = communicatorInterface.acceptTask(
@@ -242,7 +247,7 @@ public class Communicator {
                 values.getAsString(Fields.ID),
                 accepted
         );
-        response.enqueue(commonCommunicate(accepted.equals("1") ? Methods.accept : Methods.reject));
+        response.enqueue(commonCommunicate(method));
     }
 
     public void log(String method, ContentValues values) throws JSONException {

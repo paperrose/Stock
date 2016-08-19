@@ -4,6 +4,8 @@ package com.artfonapps.clientrestore;
  * Created by paperrose on 17.12.2014.
  */
 
+//TODO delete after refactoring
+
 import android.content.Context;
 import android.os.NetworkOnMainThreadException;
 import android.util.Log;

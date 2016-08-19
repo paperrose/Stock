@@ -26,19 +26,21 @@ import android.widget.Toast;
 import com.artfonapps.clientrestore.JSONParser;
 import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.constants.Fields;
-import com.artfonapps.clientrestore.db.Helper;
-import com.artfonapps.clientrestore.db.Order;
-import com.artfonapps.clientrestore.db.Point;
+import com.artfonapps.clientrestore.models.Helper;
+import com.artfonapps.clientrestore.models.Order;
+import com.artfonapps.clientrestore.models.Point;
 import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
+import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
 import com.artfonapps.clientrestore.network.events.requests.ClickEvent;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
+import com.artfonapps.clientrestore.network.events.requests.DeleteEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoadPointsEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
 import com.artfonapps.clientrestore.network.logger.Logger;
 import com.artfonapps.clientrestore.network.logger.Methods;
 import com.artfonapps.clientrestore.network.requests.CookieStorage;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
-import com.artfonapps.clientrestore.network.utils.Communicator;
+import com.artfonapps.clientrestore.network.requests.Communicator;
 import com.artfonapps.clientrestore.views.adapters.MainPagerAdapter;
 import com.artfonapps.clientrestore.views.utils.VerticalViewPager;
 import com.dd.CircularProgressButton;
@@ -49,9 +51,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by Emil on 11.08.2016.
@@ -102,14 +103,16 @@ public class StartActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main_new);
         initSettings();
         initUtils();
-        initDB();
+        try {
+            initDB();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         pages = new ArrayList<>();
         ids = new ArrayList<>();
         vvp = (VerticalViewPager)findViewById(R.id.vvp);
         pages.add(createVPPage());
         initElements();
-        if (currentPoint != null)
-            refreshViews();
         pages.add(mainPage);
         mainPagerAdapter = new MainPagerAdapter(StartActivity.this, ids, points, orders);
         vvp.setAdapter(mainPagerAdapter);
@@ -118,6 +121,8 @@ public class StartActivity extends AppCompatActivity {
 
         vvp.setScrollSpeed(5.f);
         vvp.setAllowedSwipeDirection(VerticalViewPager.SwipeDirection.up);
+        if (currentPoint != null)
+            refresh();
         vvp.addOnPageChangeListener (new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -149,30 +154,21 @@ public class StartActivity extends AppCompatActivity {
             logger.log(Methods.load_points, generateDefaultContentValues());
             loadPoints();
         }
+ //       DEBUG = (getIntent().getStringExtra("pass") != null &&
+ //               getIntent().getStringExtra("pass").equals("3656834"));
+
         DEBUG = true;
         vvp.setVisibility(View.INVISIBLE);
 
     }
 
-    private void initDB() {
+    private void initDB() throws JSONException {
         points = new ArrayList<>();
         orders = new ArrayList<>();
         points.addAll(Helper.getPoints());
+        orders.addAll(Helper.getOrders(points));
         setCurPoint();
-        Set<Integer> ordersHM = new HashSet<>();
-        int curOrder = -1;
-        for (Point point : points) {
-            if (!ordersHM.contains(point.getIdListTraffic())) {
-                ordersHM.add(point.getIdListTraffic());
-            }
-            if (point.isCurItem()) curOrder = point.getIdListTraffic();
-        }
-        for (Integer orderId : ordersHM) {
-            orders.add(new Order()
-                    .setIdListTraffic(orderId)
-                    .setPoints(Helper.getPointsInOrder(orderId))
-                    .setCurrentOrder(curOrder == orderId));
-        }
+
     }
 
     private void initSettings() {
@@ -215,7 +211,6 @@ public class StartActivity extends AppCompatActivity {
                     contentValues = generateDefaultContentValues();
                     contentValues.put("stage", currentPoint.stage);
                     logger.log(Methods.location_error, contentValues);
-                    // (new LogTask()).execute(Methods.location_error, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
                     builder.setTitle("Предупреждение");
                     builder.setMessage("Вы слишком далеко от места назначения. Ваши координаты: " +
                             currentLocation.getLatitude() + ":" + currentLocation.getLongitude() + ". Место находится тут: " +
@@ -301,6 +296,36 @@ public class StartActivity extends AppCompatActivity {
     }
 
     @Subscribe
+    public void onLocalDeleteEvent(LocalDeleteEvent localDeleteEvent) {
+        int orderId = localDeleteEvent.getCurOrder().getIdListTraffic();
+        Iterator<Order> orderIterator = orders.iterator();
+        while (orderIterator.hasNext()) {
+            Order current = orderIterator.next();
+            if (current.getIdListTraffic() == orderId)
+                orderIterator.remove();
+        }
+        try {
+            Helper.deleteOrder(orderId);
+            contentValues = new ContentValues();
+            contentValues.put(Fields.ID, orderId);
+            contentValues.put(Fields.ACCEPTED, 1);
+            logger.log(Methods.remove, generateDefaultContentValues());
+            communicator.communicate(Methods.remove, contentValues, false);
+            refresh();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        //(new AcceptTask()).execute(order_id, "0");
+    }
+
+    @Subscribe
+    public void onDeleteEvent(DeleteEvent localDeleteEvent) {
+        refresh();
+       //(new AcceptTask()).execute(order_id, "0");
+    }
+
+    @Subscribe
     public void onClickEvent(ClickEvent clickEvent){
         JSONObject res = clickEvent.getResponseObject();
         switch (currentPoint.stage) {
@@ -326,13 +351,8 @@ public class StartActivity extends AppCompatActivity {
 
         points.clear();
         points.addAll(Helper.getPoints());
-        mainPagerAdapter.setPoints(points);
-        try {
-            mainPagerAdapter.setOrders(Helper.getOrders(points));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        refreshViews();
+
+        refresh();
     }
 
     @Subscribe
@@ -347,7 +367,7 @@ public class StartActivity extends AppCompatActivity {
                                 Helper.getFirstPointInOrder(currentOrder.getIdListTraffic()) :
                                 Helper.getFirstPoint();
             }
-            refreshViews();
+            refresh();
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -490,11 +510,15 @@ public class StartActivity extends AppCompatActivity {
     }
 
     private void refreshPoints() {
-
+        mainPagerAdapter.setPoints(points);
     }
 
     private void refreshOrders() {
-
+        try {
+            mainPagerAdapter.setOrders(Helper.getOrders(points));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private LocationListener locationListener = new LocationListener() {

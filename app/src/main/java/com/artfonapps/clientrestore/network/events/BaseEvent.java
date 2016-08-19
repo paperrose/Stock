@@ -25,5 +25,9 @@ public class BaseEvent {
         this.responseObject = new JSONObject(str);
     }
 
+    public BaseEvent(JSONObject object) {
+        this.responseObject = object;
+    }
+
     public BaseEvent() {}
 }

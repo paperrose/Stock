@@ -1,4 +1,4 @@
-package com.artfonapps.clientrestore.network;
+package com.artfonapps.clientrestore.network.requests;
 
 import com.artfonapps.clientrestore.constants.Fields;
 

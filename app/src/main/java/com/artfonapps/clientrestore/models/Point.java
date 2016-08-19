@@ -1,4 +1,4 @@
-package com.artfonapps.clientrestore.db;
+package com.artfonapps.clientrestore.models;
 
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
@@ -6,6 +6,7 @@ import com.activeandroid.annotation.Column.ConflictAction;
 import com.activeandroid.annotation.Table;
 import com.activeandroid.query.Select;
 import com.artfonapps.clientrestore.BuildConfig;
+import com.artfonapps.clientrestore.constants.Columns;
 import com.artfonapps.clientrestore.constants.JsonFields;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -15,42 +16,44 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
+
 @Table(name = "Point")
 public class Point extends Model {
     public static final String NULL_STR = "null";
-    @Column(name = "address")
+    @Column(name = Columns.ADDRESS)
     public String address;
-    @Column(name = "arrivalDatetime")
+    @Column(name = Columns.ARRIVAL_DATETIME)
     public Long arrivalDatetime;
-    @Column(name = "client")
+    @Column(name = Columns.CLIENT)
     public String client;
-    @Column(name = "contact")
+    @Column(name = Columns.CONTACT)
     public String contact;
-    @Column(name = "contactName")
+    @Column(name = Columns.CONTACT_NAME)
     public String contactName;
-    @Column(name = "curItem")
+    @Column(name = Columns.CUR_ITEM)
     public int curItem;
-    @Column(name = "doc")
+    @Column(name = Columns.DOC)
     public String doc;
-    @Column(name = "finishDatetime")
+    @Column(name = Columns.FINISH_DATETIME)
     public Long finishDatetime;
-    @Column(name = "idListTraffic")
+    @Column(name = Columns.ID_LIST_TRAFFIC)
     public int idListTraffic;
-    @Column(name = "idListTrafficRoute", onUniqueConflict = ConflictAction.REPLACE, unique = true)
+    @Column(name = Columns.ID_LIST_TRAFFIC_ROUTE, onUniqueConflict = ConflictAction.REPLACE, unique = true)
     public int idListTrafficRoute;
-    @Column(name = "lat")
+    @Column(name = Columns.LAT)
     public double lat;
-    @Column(name = "lng")
+    @Column(name = Columns.LNG)
     public double lng;
-    @Column(name = "planDatetime")
+    @Column(name = Columns.PLAN_DATETIME)
     public Long planDatetime;
-    @Column(name = "point")
+    @Column(name = Columns.POINT)
     public String point;
-    @Column(name = "stage")
+    @Column(name = Columns.STAGE)
     public int stage;
-    @Column(name = "startDatetime")
+    @Column(name = Columns.START_DATETIME)
     public Long startDatetime;
-    @Column(name = "type")
+    @Column(name = Columns.TYPE)
     public int type;
 
     public Point() {
@@ -205,6 +208,8 @@ public class Point extends Model {
         this.contactName = contactName;
     }
 
+    //TODO refactor this! red alert!
+
     public Point(JSONObject desc) throws JSONException {
         long j;
         this.lng = 0.0d;
@@ -277,6 +282,8 @@ public class Point extends Model {
         save();
     }
 
+    //TODO refactor this! red alert!
+
     public void copyPoint(JSONObject desc) throws JSONException {
         this.client = desc.getString(JsonFields.CLIENT).equals(NULL_STR) ? BuildConfig.FLAVOR : desc.getString(JsonFields.CLIENT);
         this.address = desc.getString(JsonFields.COORDINATES).equals(NULL_STR) ? BuildConfig.FLAVOR : desc.getString(JsonFields.COORDINATES);
@@ -326,8 +333,7 @@ public class Point extends Model {
     }
 
     public String parsePhone(String phone) {
-        String phoneVal = BuildConfig.FLAVOR;
-        phoneVal = phone.replaceAll("\\(", BuildConfig.FLAVOR).replaceAll("\\)", BuildConfig.FLAVOR).replaceAll("-", BuildConfig.FLAVOR).replaceAll("\\-", BuildConfig.FLAVOR);
+        String phoneVal = phone.replaceAll("[\\(\\)\\-]", BuildConfig.FLAVOR).replaceAll("-", BuildConfig.FLAVOR);
         if (phoneVal.length() < 11) {
             return "+7" + phoneVal;
         }

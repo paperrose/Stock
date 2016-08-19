@@ -1,11 +1,15 @@
-package com.artfonapps.clientrestore.db;
+package com.artfonapps.clientrestore.models;
 
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
+import com.artfonapps.clientrestore.constants.Columns;
 import com.artfonapps.clientrestore.constants.JsonFields;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -77,24 +81,25 @@ public class Helper {
         }
     }
 
+    public static void deleteOrder(int idListTraffic) throws JSONException {
+        new Delete().from(Point.class).where(Columns.ID_LIST_TRAFFIC + " = ?", idListTraffic).execute();
+    }
+
     public static List<Order> getOrders(List<Point> points) throws JSONException {
-        HashMap<Integer, ArrayList<Point>> pointsByOrders = new HashMap();
-        List<Order> orders = new ArrayList();
-        int currentOrder = 0;
+        List<Order> orders = new ArrayList<>();
+        Set<Integer> ordersHM = new HashSet<>();
+        int curOrder = -1;
         for (Point point : points) {
-            if (!pointsByOrders.containsKey(Integer.valueOf(point.getIdListTraffic()))) {
-                pointsByOrders.put(Integer.valueOf(point.getIdListTraffic()), new ArrayList());
+            if (!ordersHM.contains(point.getIdListTraffic())) {
+                ordersHM.add(point.getIdListTraffic());
             }
-            ((ArrayList) pointsByOrders.get(Integer.valueOf(point.getIdListTraffic()))).add(point);
-            if (point.isCurItem()) {
-                currentOrder = point.getIdListTraffic();
-            }
+            if (point.isCurItem()) curOrder = point.getIdListTraffic();
         }
-        for (Integer key : pointsByOrders.keySet()) {
+        for (Integer orderId : ordersHM) {
             orders.add(new Order()
-                    .setIdListTraffic(key.intValue())
-                    .setPoints((ArrayList) pointsByOrders.get(key))
-                    .setCurrentOrder(key.intValue() == currentOrder));
+                    .setIdListTraffic(orderId)
+                    .setPoints(Helper.getPointsInOrder(orderId))
+                    .setCurrentOrder(curOrder == orderId));
         }
         return orders;
     }

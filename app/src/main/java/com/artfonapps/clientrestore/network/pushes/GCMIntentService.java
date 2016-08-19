@@ -24,7 +24,7 @@ import com.artfonapps.clientrestore.JSONParser;
 import com.artfonapps.clientrestore.views.MainActivity;
 import com.artfonapps.clientrestore.R;
 
-import com.artfonapps.clientrestore.db.AlertPointItem;
+import com.artfonapps.clientrestore.models.AlertPointItem;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import org.json.JSONArray;

@@ -46,13 +46,13 @@ import com.artfonapps.clientrestore.views.adapters.AlertPointAdapter;
 import com.artfonapps.clientrestore.views.adapters.OrdersAdapter;
 import com.artfonapps.clientrestore.views.adapters.PointsAdapter;
 import com.artfonapps.clientrestore.constants.Fields;
-import com.artfonapps.clientrestore.db.AlertPointItem;
-import com.artfonapps.clientrestore.db.Order;
-import com.artfonapps.clientrestore.db.Point;
+import com.artfonapps.clientrestore.models.AlertPointItem;
+import com.artfonapps.clientrestore.models.Order;
+import com.artfonapps.clientrestore.models.Point;
 import com.artfonapps.clientrestore.network.logger.Methods;
 import com.artfonapps.clientrestore.network.requests.CookieStorage;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
-import com.artfonapps.clientrestore.network.utils.Communicator;
+import com.artfonapps.clientrestore.network.requests.Communicator;
 import com.dd.CircularProgressButton;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
@@ -65,6 +65,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+
+//TODO delete after refactoring
 
 public class MainActivity extends AppCompatActivity {
 
@@ -152,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         communicator = Communicator.INSTANCE;
-      //  IntentStorage.apiIntentService = new Intent(this, ApiIntentService.class);
        // setHasOptionsMenu(true);
         CookieStorage.activity = MainActivity.this;
         SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
@@ -289,18 +291,6 @@ public class MainActivity extends AppCompatActivity {
             (new LoginTask()).execute();
         } else {
             ((TextView) findViewById(R.id.textAutorize)).setText("Загрузка данных...");
-     //       Bundle rjVars = new Bundle();
-      //      Bundle logVars = new Bundle();
-         /*   rjVars.putString("", "");
-            rjVars.putString("", "");
-            rjVars.putString("", "");
-            rjVars.putString("", "");
-            rjVars.putString("", "");
-            rjVars.putString("", "");
-            startService(IntentStorage.apiIntentService
-                    .putExtra("method", Methods.load_points)
-                    .putExtra("url", JSONParser.domainName + "api/auto/mobile/job")
-                    .putExtra("vars", ));*/
             (new LogTask()).execute(Methods.load_points, Integer.toString(currentOperation), Integer.toString(curId));
             (new ReqJobTask()).execute();
         }
