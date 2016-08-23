@@ -324,22 +324,23 @@ public class StartActivity extends AppCompatActivity {
 
     @Subscribe
     public void onDeleteEvent(DeleteEvent deleteEvent) {
-        points.clear();
-        points.addAll(Helper.getPoints());
-        orders.clear();
         try {
+            points.clear();
+            points.addAll(Helper.getPoints());
+            orders.clear();
             orders.addAll(Helper.getOrders(points));
+            currentPoint = Helper.getCurPoint();
+            if (currentPoint == null) {
+                currentPoint =
+                        currentOrder != null ?
+                                Helper.getFirstPointInOrder(currentOrder.getIdListTraffic()) :
+                                Helper.getFirstPoint();
+            }
+
+            refresh();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        currentPoint = Helper.getCurPoint();
-        if (currentPoint == null) {
-            currentPoint =
-                    currentOrder != null ?
-                            Helper.getFirstPointInOrder(currentOrder.getIdListTraffic()) :
-                            Helper.getFirstPoint();
-        }
-        refresh();
     }
 
     @Subscribe
