@@ -1,6 +1,7 @@
 package com.artfonapps.clientrestore.views.adapters;
 
 import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,7 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.artfonapps.clientrestore.db.AlertPointItem;
-import com.artfonapps.clientrestore.views.MainActivity;
+
 import com.artfonapps.clientrestore.R;
 
 import java.util.ArrayList;
@@ -18,12 +19,12 @@ import java.util.ArrayList;
  */
 public class AlertPointAdapter extends ArrayAdapter<AlertPointItem> {
 
-    MainActivity context;
+    AppCompatActivity context;
     private ArrayList<AlertPointItem> items;
 
     public AlertPointAdapter(Context context, int resource, ArrayList<AlertPointItem> objects) {
         super(context, resource, objects);
-        this.context = (MainActivity)context;
+        this.context = (AppCompatActivity)context;
         this.items = objects;
     }
 

@@ -8,7 +8,7 @@ import org.json.JSONObject;
  * Created by Emil on 19.08.2016.
  */
 public class UpdateEvent extends BaseEvent {
-    public UpdateEvent(JSONObject object) {
-        super(object);
+    public UpdateEvent() {
+        super();
     }
 }

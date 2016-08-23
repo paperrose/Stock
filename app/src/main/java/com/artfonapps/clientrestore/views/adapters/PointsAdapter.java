@@ -20,7 +20,6 @@ import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
-import com.artfonapps.clientrestore.views.MainActivity;
 import com.artfonapps.clientrestore.views.StartActivity;
 import com.squareup.otto.Produce;
 
@@ -126,14 +125,7 @@ public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder
                     p2.setCurItem(false);
                 p0.setCurItem(true);
                 notifyDataSetChanged();
-                if (context instanceof MainActivity) {
-                    //TODO remove this after refactoring
-                    Intent intent2 = new Intent("refresh_push_count");
-                    intent2.putExtra("type", "change");
-                    intent2.putExtra("id", Integer.toString(p0.getIdListTrafficRoute()));
-                    intent2.putExtra("traffic_id", Integer.toString(p0.getIdListTraffic()));
-                    LocalBroadcastManager.getInstance(context).sendBroadcast(intent2);
-                } else if (context instanceof StartActivity) {
+                if (context instanceof StartActivity) {
                     BusProvider.getInstance()
                             .post(produceChangeCurPointEvent(p0));
                 }

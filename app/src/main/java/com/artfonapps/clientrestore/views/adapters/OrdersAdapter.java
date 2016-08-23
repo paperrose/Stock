@@ -21,7 +21,7 @@ import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
-import com.artfonapps.clientrestore.views.MainActivity;
+
 import com.artfonapps.clientrestore.views.StartActivity;
 import com.squareup.otto.Produce;
 
@@ -103,15 +103,10 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
                         .setPositiveButton("Да",
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        //TODO remove this after refactoring
-                                        if (mContext instanceof MainActivity) {
-                                            ((MainActivity)mContext).removeLog(Integer.toString(orders.get((Integer)v.getTag()).idListTraffic));
-                                            ((MainActivity)mContext).declineTask(Integer.toString(orders.get((Integer)v.getTag()).idListTraffic));
-                                        } else if (mContext instanceof StartActivity) {
+                                        if (mContext instanceof StartActivity) {
                                             BusProvider.getInstance()
                                                     .post(produceDeleteEvent(orders.get((Integer)v.getTag())));
                                         }
-                                        //TODO deleteEvent
                                     }
                                 });
 

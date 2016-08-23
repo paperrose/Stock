@@ -22,6 +22,7 @@ public class Methods {
     public static final String refresh = "refresh";
     public static final String send_phone = "send_phone";
     public static final String send_code = "send_code";
+    public static final String end_route = "end_route";
     /*
         login - при авторизации
         load_points - отправили запрос job

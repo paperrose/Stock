@@ -15,11 +15,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,11 +29,14 @@ import com.activeandroid.query.Delete;
 import com.artfonapps.clientrestore.JSONParser;
 import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.constants.Fields;
+import com.artfonapps.clientrestore.db.AlertPointItem;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
+import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
+import com.artfonapps.clientrestore.network.events.pushes.UpdateEvent;
 import com.artfonapps.clientrestore.network.events.requests.ClickEvent;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
 import com.artfonapps.clientrestore.network.events.requests.DeleteEvent;
@@ -42,6 +47,7 @@ import com.artfonapps.clientrestore.network.logger.Methods;
 import com.artfonapps.clientrestore.network.requests.CookieStorage;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
 import com.artfonapps.clientrestore.network.requests.Communicator;
+import com.artfonapps.clientrestore.views.adapters.AlertPointAdapter;
 import com.artfonapps.clientrestore.views.adapters.MainPagerAdapter;
 import com.artfonapps.clientrestore.views.utils.VerticalViewPager;
 import com.dd.CircularProgressButton;
@@ -104,6 +110,7 @@ public class StartActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main_new);
         initSettings();
         initUtils();
+        CookieStorage.startActivity = StartActivity.this;
         try {
             initDB();
         } catch (JSONException e) {
@@ -171,6 +178,7 @@ public class StartActivity extends AppCompatActivity {
         setCurPoint();
 
     }
+
 
     private void initSettings() {
         SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
@@ -266,6 +274,7 @@ public class StartActivity extends AppCompatActivity {
     @Subscribe
     public void onChangeCurPointEvent(ChangeCurPointEvent changeCurPointEvent) {
         currentPoint = changeCurPointEvent.getCurPoint();
+        logger.log(Methods.change_point, getTrafficContentValues());
         refresh();
     }
 
@@ -308,6 +317,9 @@ public class StartActivity extends AppCompatActivity {
         }
         try {
             Helper.deleteOrder(orderId);
+           // initDB();
+            setCurPoint();
+            refresh();
             if (localDeleteEvent.isFromPush()) return;
             contentValues = new ContentValues();
             contentValues.put(Fields.ID, orderId);
@@ -344,8 +356,72 @@ public class StartActivity extends AppCompatActivity {
     }
 
     @Subscribe
+    public void onUpdateEvent(UpdateEvent updateEvent){
+        loadPoints();
+    }
+
+    @Subscribe
+    public void onNewOrderEvent(NewOrderEvent newOrderEvent){
+        try {
+
+            //pushes.add(new PushItem(intent.getStringExtra("date"), intent.getStringExtra("title"), intent.getStringExtra("description")));
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(CookieStorage.startActivity);
+            LayoutInflater inflater = LayoutInflater.from(CookieStorage.startActivity);
+            View convertView =  inflater.inflate(R.layout.alert_layout, null);
+            final int order_id = newOrderEvent.getCurOrder();
+            ListView alertList = (ListView) convertView.findViewById(R.id.alertList);
+            ArrayList<AlertPointItem> points2 = new ArrayList<>();
+            try {
+                JSONObject jobj = newOrderEvent.getResponseObject();
+                JSONArray pts = jobj.getJSONArray("points");
+                for (int i = 0; i < pts.length(); i++) {
+                    points2.add(new AlertPointItem(pts.getJSONObject(i)));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            AlertPointAdapter alertPointAdapter = new AlertPointAdapter(CookieStorage.startActivity, R.layout.alert_point_item, points2);
+            alertList.setAdapter(alertPointAdapter);
+            alertDialog.setView(convertView);
+            alertDialog.setTitle("Новый заказ");
+
+            final ContentValues contentValues = generateDefaultContentValues();
+            contentValues.put("id_traffic", order_id);
+            logger.log(Methods.view_new_order, contentValues);
+            final ContentValues reqValues = new ContentValues();
+            reqValues.put(Fields.ID, order_id);
+            alertDialog.setPositiveButton("Принять", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    logger.log(Methods.accept, contentValues);
+                    communicator.communicate(Methods.accept, reqValues, false);
+                    refresh();
+                    setCurPoint();
+                    dialog.dismiss();
+
+                }
+            });
+            alertDialog.setNegativeButton("Отказаться", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+
+                    logger.log(Methods.reject, contentValues);
+                    communicator.communicate(Methods.refresh, reqValues, false);
+                    refresh();
+                    dialog.dismiss();
+                }
+            });
+            AlertDialog alert = alertDialog.create();
+
+            alert.show();
+        } catch (Exception e) {
+
+        }
+    }
+
+    @Subscribe
     public void onClickEvent(ClickEvent clickEvent){
         JSONObject res = clickEvent.getResponseObject();
+        logger.log(Methods.click_point_loaded, generateDefaultContentValues());
+        boolean changed = false;
         switch (currentPoint.stage) {
             case 1:
                 currentPoint.setArrivalDatetime(System.currentTimeMillis());
@@ -359,13 +435,18 @@ public class StartActivity extends AppCompatActivity {
                 currentPoint.setFinishDatetime(System.currentTimeMillis());
                 currentPoint.stage = 4;
                 currentPoint.setCurItem(false);
+                changed = true;
                 break;
             default:
                 break;
         }
         currentPoint.save();
         setCurPoint();
-
+        if (changed) {
+            logger.log(currentPoint != null ?
+                    Methods.change_point_auto : Methods.end_route,
+                    generateDefaultContentValues());
+        }
 
         points.clear();
         points.addAll(Helper.getPoints());
@@ -391,6 +472,7 @@ public class StartActivity extends AppCompatActivity {
                                 Helper.getFirstPointInOrder(currentOrder.getIdListTraffic()) :
                                 Helper.getFirstPoint();
             }
+            logger.log(Methods.load_points, generateDefaultContentValues());
 
             refresh();
         } catch (JSONException e) {
@@ -404,6 +486,12 @@ public class StartActivity extends AppCompatActivity {
         (findViewById(R.id.endLayout)).setVisibility(View.VISIBLE);
     }
 
+
+    private ContentValues getTrafficContentValues() {
+        ContentValues contentValues = generateDefaultContentValues();
+        contentValues.put("id_traffic", currentPoint.getIdListTraffic());
+        return contentValues;
+    }
 
     private ContentValues generateDefaultContentValues() {
         ContentValues contentValues = new ContentValues();
@@ -480,7 +568,7 @@ public class StartActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_refresh) {
-            logger.log(Methods.load_points, generateDefaultContentValues());
+            logger.log(Methods.refresh, generateDefaultContentValues());
             loadPoints();
             return true;
 
@@ -555,12 +643,12 @@ public class StartActivity extends AppCompatActivity {
     }
 
     private void refreshPoints() {
-        mainPagerAdapter.setPoints(points);
+        mainPagerAdapter.setPoints(Helper.getPoints());
     }
 
     private void refreshOrders() {
         try {
-            mainPagerAdapter.setOrders(Helper.getOrders(points));
+            mainPagerAdapter.setOrders(Helper.getOrders(Helper.getPoints()));
         } catch (JSONException e) {
             e.printStackTrace();
         }

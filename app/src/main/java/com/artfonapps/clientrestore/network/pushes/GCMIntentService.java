@@ -1,9 +1,5 @@
 package com.artfonapps.clientrestore.network.pushes;
 
-/**
- * Created by paperrose on 15.12.2014.
- */
-
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -13,20 +9,21 @@ import android.content.Intent;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
-import com.artfonapps.clientrestore.JSONParser;
+import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
-import com.artfonapps.clientrestore.views.MainActivity;
+import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
+import com.artfonapps.clientrestore.network.events.pushes.UpdateEvent;
 import com.artfonapps.clientrestore.R;
 
 import com.artfonapps.clientrestore.db.AlertPointItem;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.artfonapps.clientrestore.network.utils.BusProvider;
+import com.artfonapps.clientrestore.views.StartActivity;
 import com.squareup.otto.Produce;
 
 import org.json.JSONArray;
@@ -65,8 +62,7 @@ public class GCMIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Bundle extras = intent.getExtras();
-        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
-        String messageType = gcm.getMessageType(intent);
+        //GoogleCloudMessaging.getInstance(this);
         try {
             description = extras.getString("description");
             if (description == null) {
@@ -75,19 +71,28 @@ public class GCMIntentService extends IntentService {
         } catch (Exception e) {
             description = extras.getString("data");
         }
-        JSONObject jobj;
+        final JSONObject jobj;
         try {
             jobj = new JSONObject(description);
             Log.e("Push", description);
-            if (jobj.getString("type").equals("new_order")) {
+            if (jobj.optString("type").equals("new_order")) {
                 showToastNew(jobj.getString("order_id"), description);
-            } else if (jobj.getString("type").equals("remove")) {
-                produceDeleteEvent(Integer.parseInt(jobj.getString("order_id")));
-            } else {
+            } else if (jobj.optString("type").equals("removed")) {
+                handler.post(new Runnable() {
+                    public void run() {
+                        try {
+                            BusProvider.getInstance()
+                                    .post(produceDeleteEvent(Integer.parseInt(jobj.getString("order_id"))));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
 
+            } else {
+                showToast();
             }
         } catch (JSONException e) {
-            showToast();
             e.printStackTrace();
         }
 
@@ -101,21 +106,35 @@ public class GCMIntentService extends IntentService {
         return new LocalDeleteEvent().setCurOrder(orderId).setFromPush(true);
     }
 
+    @Produce
+    public NewOrderEvent produceNewOrderEvent(JSONObject order, int orderId){
+        return new NewOrderEvent(order).setCurOrder(orderId);
+    }
+
+    @Produce
+    public UpdateEvent produceUpdateEvent(){
+        return new UpdateEvent();
+    }
+
     public void showToastNew(final String order_id, final String m_desc){
         handler.post(new Runnable() {
             public void run() {
-                    Context context = getApplicationContext();
-                    Intent intent2 = new Intent("new_order");
-                    intent2.putExtra("desc", m_desc);
-                    intent2.putExtra("order_id", order_id);
-                    if (getOrders().get(order_id) != null) {
-                        return;
-                    }
-                    getOrders().put(order_id, "1");
-                    LocalBroadcastManager.getInstance(context).sendBroadcast(intent2);
-                Intent intent3 = new Intent("refresh_push_count");
-                LocalBroadcastManager.getInstance(context).sendBroadcast(intent3);
-                ArrayList<AlertPointItem> points2 = new ArrayList<AlertPointItem>();
+
+                Context context = getApplicationContext();
+                if (Helper.getFirstPointInOrder(Integer.parseInt(order_id)) != null) {
+                    return;
+                }
+                try {
+                    BusProvider.getInstance()
+                            .post(produceNewOrderEvent(new JSONObject(m_desc), Integer.parseInt(order_id)));
+                    BusProvider.getInstance()
+                            .post(produceUpdateEvent());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+                ArrayList<AlertPointItem> points2 = new ArrayList<>();
                 String bigTextS = "";
                 try {
 
@@ -134,14 +153,14 @@ public class GCMIntentService extends IntentService {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                Intent notificationIntent = new Intent(context, MainActivity.class);
+                Intent notificationIntent = new Intent(context, StartActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("type", "new_order_click");
                 bundle.putString("desc", m_desc);
                 bundle.putString("order_id", order_id);
                 notificationIntent.putExtras(bundle);
-                notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP);
+               // notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+               //         Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
                         new Random().nextInt(), notificationIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT);
@@ -166,30 +185,6 @@ public class GCMIntentService extends IntentService {
 
     }
 
-    private class LogTask extends AsyncTask<String, Void, JSONObject> {
-
-        @Override
-        protected JSONObject doInBackground(final String... params) {
-            JSONParser parser = new JSONParser();
-            JSONObject obj = parser.getJSONFromUrl("api/auto/mobile/log", new HashMap<String, String>() {{
-                JSONObject object = new JSONObject();
-                JSONArray arr = new JSONArray();
-                try {
-                    object.put("method", "Get Push");
-                    object.put("phone", params[1]);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                put("currentJson", object.toString());
-            }}, getApplicationContext());
-            return obj;
-        }
-
-        @Override
-        protected void onPostExecute(JSONObject res) {
-
-        }
-    }
 
     public void showToast(){
         handler.post(new Runnable() {
