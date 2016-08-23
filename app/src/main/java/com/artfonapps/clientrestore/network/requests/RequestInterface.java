@@ -20,6 +20,16 @@ public interface RequestInterface {
                                  @Field(Fields.PASSWORD) String password);
 
     @FormUrlEncoded
+    @POST("api/auto/mobile/register")
+    Call<ResponseBody> register(@Header("Cookie") String cookie,
+                               @Field(Fields.TYPE) String type,
+                               @Field(Fields.MOBILE) String mobile,
+                               @Field(Fields.DEVICE_ID) String device_id,
+                               @Field(Fields.CODE) String code);
+
+
+
+    @FormUrlEncoded
     @POST("api/auto/mobile/job/point")
     Call<ResponseBody> reqTask(@Header("Cookie") String cookie,
                                @Field(Fields.MOBILE) String mobile,

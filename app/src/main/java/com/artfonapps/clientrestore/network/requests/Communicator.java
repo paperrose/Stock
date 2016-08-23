@@ -11,6 +11,8 @@ import com.artfonapps.clientrestore.network.events.local.LogEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
 import com.artfonapps.clientrestore.network.events.local.LogoutEvent;
 import com.artfonapps.clientrestore.network.events.requests.RejectEvent;
+import com.artfonapps.clientrestore.network.events.requests.SendCodeEvent;
+import com.artfonapps.clientrestore.network.events.requests.SendPhoneEvent;
 import com.artfonapps.clientrestore.network.logger.Methods;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
@@ -76,6 +78,8 @@ public class Communicator {
                 .build();
     }
 
+    //TODO refactor with generics?
+
     @Produce
     public ErrorEvent produceErrorEvent(int errorCode, String errorMsg) {
         return  new ErrorEvent(errorCode, errorMsg);
@@ -107,6 +111,16 @@ public class Communicator {
     }
 
     @Produce
+    public SendCodeEvent produceSendCodeEvent(ResponseBody body) throws IOException, JSONException {
+        return new SendCodeEvent(body);
+    }
+
+    @Produce
+    public SendPhoneEvent produceSendPhoneEvent(ResponseBody body) throws IOException, JSONException {
+        return new SendPhoneEvent(body);
+    }
+
+    @Produce
     public LogEvent produceLogEvent(ResponseBody body) throws IOException, JSONException {
         return new LogEvent(body);
     }
@@ -134,6 +148,12 @@ public class Communicator {
                     break;
                 case Methods.reject:
                     accept(Methods.reject, vars);
+                    break;
+                case Methods.send_phone:
+                    register(Methods.send_phone, vars);
+                    break;
+                case Methods.send_code:
+                    register(Methods.send_code, vars);
                     break;
                 case Methods.login:
                     login(vars);
@@ -167,6 +187,14 @@ public class Communicator {
 
                 if (response.code() == 200)
                     switch (method) {
+                        case Methods.send_code:
+                            BusProvider.getInstance()
+                                    .post(produceSendCodeEvent(response.body()));
+                            break;
+                        case Methods.send_phone:
+                            BusProvider.getInstance()
+                                    .post(produceSendPhoneEvent(response.body()));
+                            break;
                         case Methods.accept:
                             BusProvider.getInstance()
                                     .post(produceAcceptEvent(response.body()));
@@ -255,6 +283,18 @@ public class Communicator {
                 CookieStorage.getInstance().getArrayList().get(0).toString(),
                 values.getAsString(Fields.ID),
                 accepted
+        );
+        response.enqueue(commonCommunicate(method));
+    }
+
+    public void register(String method, ContentValues values) throws JSONException {
+        RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
+        Call<ResponseBody> response = communicatorInterface.register(
+                CookieStorage.getInstance().getArrayList().get(0).toString(),
+                values.getAsString(Fields.TYPE),
+                values.getAsString(Fields.MOBILE),
+                values.getAsString(Fields.DEVICE_ID),
+                values.getAsString(Fields.CODE)
         );
         response.enqueue(commonCommunicate(method));
     }

@@ -4,6 +4,9 @@ package com.artfonapps.clientrestore.constants;
  * Created by Emil on 10.08.2016.
  */
 public class Fields {
+    public static final String TYPE = "type";
+    public static final String DEVICE_ID = "device_id";
+    public static final String CODE = "code";
     public static final String LOGIN = "login";
     public static final String PASSWORD = "password";
     public static final String MOBILE = "mobile";
