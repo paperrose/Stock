@@ -62,7 +62,7 @@ public class JSONParser {
             int timeoutSocket = 7000;
             HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
             DefaultHttpClient httpClient = new DefaultHttpClient(httpParameters);
-            HttpPost httpPost = new HttpPost(domainName + "login");
+            HttpPost httpPost = new HttpPost(debugDomainName + "login");
             ArrayList<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("login", "admin"));
             params.add(new BasicNameValuePair("password", "123456"));
@@ -114,7 +114,7 @@ public class JSONParser {
             int timeoutSocket = 5700;
             HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
             DefaultHttpClient httpClient = new DefaultHttpClient(httpParameters);
-            HttpPost httpPost = new HttpPost(domainName+url);
+            HttpPost httpPost = new HttpPost(debugDomainName+url);
             Log.e("Json resp 1", httpPost.getURI().toString());
 
            // if (!MainActivity.DEBUG) {

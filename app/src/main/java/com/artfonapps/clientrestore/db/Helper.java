@@ -1,11 +1,10 @@
-package com.artfonapps.clientrestore.models;
+package com.artfonapps.clientrestore.db;
 
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.artfonapps.clientrestore.constants.Columns;
 import com.artfonapps.clientrestore.constants.JsonFields;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

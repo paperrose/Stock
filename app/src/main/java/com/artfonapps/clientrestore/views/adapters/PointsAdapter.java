@@ -11,14 +11,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.artfonapps.clientrestore.R;
-import com.artfonapps.clientrestore.models.Helper;
-import com.artfonapps.clientrestore.models.Point;
+import com.artfonapps.clientrestore.db.Helper;
+import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
 import com.artfonapps.clientrestore.views.MainActivity;

@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.artfonapps.clientrestore.models.AlertPointItem;
+import com.artfonapps.clientrestore.db.AlertPointItem;
 import com.artfonapps.clientrestore.views.MainActivity;
 import com.artfonapps.clientrestore.R;
 

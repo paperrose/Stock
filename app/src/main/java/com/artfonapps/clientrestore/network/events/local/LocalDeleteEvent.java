@@ -1,6 +1,5 @@
 package com.artfonapps.clientrestore.network.events.local;
 
-import com.artfonapps.clientrestore.models.Order;
 import com.artfonapps.clientrestore.network.events.BaseEvent;
 
 /**

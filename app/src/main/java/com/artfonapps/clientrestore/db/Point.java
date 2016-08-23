@@ -1,4 +1,4 @@
-package com.artfonapps.clientrestore.models;
+package com.artfonapps.clientrestore.db;
 
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;

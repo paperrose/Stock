@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.artfonapps.clientrestore.R;
-import com.artfonapps.clientrestore.models.Order;
-import com.artfonapps.clientrestore.models.Point;
+import com.artfonapps.clientrestore.db.Order;
+import com.artfonapps.clientrestore.db.Point;
 
 import java.util.ArrayList;
 import java.util.List;

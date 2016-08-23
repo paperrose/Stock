@@ -1,6 +1,6 @@
 package com.artfonapps.clientrestore.network.events.local;
 
-import com.artfonapps.clientrestore.models.Point;
+import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.BaseEvent;
 
 /**

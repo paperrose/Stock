@@ -1,4 +1,4 @@
-package com.artfonapps.clientrestore.models;
+package com.artfonapps.clientrestore.db;
 
 /**
  * Created by Emil on 18.08.2016.

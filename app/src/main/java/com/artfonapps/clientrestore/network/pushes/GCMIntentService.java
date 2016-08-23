@@ -21,12 +21,11 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.artfonapps.clientrestore.JSONParser;
-import com.artfonapps.clientrestore.models.Order;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
 import com.artfonapps.clientrestore.views.MainActivity;
 import com.artfonapps.clientrestore.R;
 
-import com.artfonapps.clientrestore.models.AlertPointItem;
+import com.artfonapps.clientrestore.db.AlertPointItem;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.squareup.otto.Produce;
 

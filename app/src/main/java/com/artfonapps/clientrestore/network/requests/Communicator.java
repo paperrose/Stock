@@ -34,7 +34,7 @@ import retrofit2.Retrofit;
  */
 public class Communicator {
     private static final String TAG = "CommunicatorStock";
-    public static String debugDomainName = "http://192.168.0.117:8080/";
+    public static String debugDomainName = "http://95.213.191.92:8098/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
 
