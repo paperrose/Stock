@@ -1,6 +1,7 @@
 package com.artfonapps.clientrestore.network.requests;
 
 import android.content.ContentValues;
+import android.util.Log;
 
 import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.network.events.requests.AcceptEvent;
@@ -21,6 +22,7 @@ import com.squareup.otto.Produce;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -36,7 +38,7 @@ import retrofit2.Retrofit;
  */
 public class Communicator {
     private static final String TAG = "CommunicatorStock";
-    public static String debugDomainName = "http://95.213.191.92:8098/";
+    public static String debugDomainName = "http://192.168.0.143:8080/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
 
@@ -301,8 +303,17 @@ public class Communicator {
 
     public void log(String method, ContentValues values) throws JSONException {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
+
+        String cookies = "";
+        try {
+            cookies = CookieStorage.getInstance().getArrayList().get(0).toString();
+        }
+        catch (IndexOutOfBoundsException e){
+            Log.i("Empty cookie", method);
+        }
+
         Call<ResponseBody> response = communicatorInterface.logTask(
-                CookieStorage.getInstance().getArrayList().get(0).toString(),
+                cookies,
                 values.getAsString(Fields.PHONE_NUMBER),
                 values.getAsString(Fields.CURRENT_JSON),
                 values.getAsString(Fields.TRAFFIC_ID)

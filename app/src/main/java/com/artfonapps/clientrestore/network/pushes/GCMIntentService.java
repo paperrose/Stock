@@ -24,6 +24,7 @@ import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.db.AlertPointItem;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
 import com.artfonapps.clientrestore.views.StartActivity;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.squareup.otto.Produce;
 
 import org.json.JSONArray;
@@ -63,6 +64,10 @@ public class GCMIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Bundle extras = intent.getExtras();
         //GoogleCloudMessaging.getInstance(this);
+        Log.e("push_msg", extras.getString("description"));
+        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+        String messageType = gcm.getMessageType(intent);
+
         try {
             description = extras.getString("description");
             if (description == null) {
@@ -163,8 +168,7 @@ public class GCMIntentService extends IntentService {
                 bundle.putString("desc", m_desc);
                 bundle.putString("order_id", order_id);
                 notificationIntent.putExtras(bundle);
-               // notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
- //                       Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
                         new Random().nextInt(), notificationIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT);
@@ -180,10 +184,11 @@ public class GCMIntentService extends IntentService {
 
                 NotificationManager notificationManager = (NotificationManager) context
                         .getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.notify(NOTIFY_ID, notification);
+                notificationManager.notify(new Random().nextInt(), notification);
                 Uri notification2 = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                 Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification2);
                 r.play();
+
             }
         });
 

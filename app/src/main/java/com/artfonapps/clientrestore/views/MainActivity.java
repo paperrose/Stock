@@ -643,7 +643,7 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject res = new JSONObject();
                 put("currentOperation", Integer.toString(currentOperation));
                 put("mobile", phoneNumber);
-
+                ///What?
             }}, getApplicationContext());
         }
 
@@ -839,7 +839,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putString("PROPERTY_MOBILE", "");
             editor.putString("PASS_CODE", "");
             editor.putString("CUR_SERVER", JSONParser.domainName);
-            editor.apply();
+            editor.commit();
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
             new Delete().from(Point.class).execute();
@@ -876,7 +876,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putString("PROPERTY_MOBILE", "");
             editor.putString("PASS_CODE", "");
             editor.putString("CUR_SERVER", JSONParser.domainName);
-            editor.apply();
+            editor.commit();
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
             new Delete().from(Point.class).execute();

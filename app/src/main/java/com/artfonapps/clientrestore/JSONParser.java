@@ -43,7 +43,7 @@ public class JSONParser {
     static JSONObject jObj = null;
     static String json = "";
     //static String domainName = "http://dev.log-os.ru/";
-    public static String debugDomainName = " http://95.213.191.92:8098/";
+    public static String debugDomainName = " http://192.168.0.143:8080/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
     // constructor

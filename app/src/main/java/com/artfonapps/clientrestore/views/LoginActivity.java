@@ -96,9 +96,10 @@ public class LoginActivity extends AppCompatActivity {
         context = getApplicationContext();
         gcm = GoogleCloudMessaging.getInstance(this);
         regid = getRegistrationId(context);
+
         if (regid.isEmpty()) {
             try {
-                gcm = GoogleCloudMessaging.getInstance(context);
+                gcm = GoogleCloudMessaging.getInstance(this);
                 regid = gcm.register(SENDER_ID);
 
             } catch (Exception ex) {
@@ -122,6 +123,10 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            gcm = GoogleCloudMessaging.getInstance(this);
+            gcm.unregister();
+        } catch (Exception e) {}
         setContentView(R.layout.activity_login);
         communicator = Communicator.INSTANCE;
         next = (CircularProgressButton)findViewById(R.id.nextStep);

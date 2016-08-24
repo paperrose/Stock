@@ -17,6 +17,7 @@ public class Fields {
     public static final String PHONE_NUMBER = "phoneNumber";
     public static final String CURRENT_JSON = "currentJson";
     public static final String TRAFFIC_ID = "trafficId";
+    public static final String CURRENT_OPERATION = "currentOperation";
 
     public static final String LOG_METHOD = "logMethod";
 }

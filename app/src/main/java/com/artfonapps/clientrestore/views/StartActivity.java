@@ -2,6 +2,7 @@ package com.artfonapps.clientrestore.views;
 
 import android.Manifest;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,10 +13,10 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,7 +40,6 @@ import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
 import com.artfonapps.clientrestore.network.events.pushes.UpdateEvent;
 import com.artfonapps.clientrestore.network.events.requests.ClickEvent;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
-import com.artfonapps.clientrestore.network.events.requests.DeleteEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoadPointsEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
 import com.artfonapps.clientrestore.network.events.requests.RejectEvent;
@@ -52,6 +52,7 @@ import com.artfonapps.clientrestore.views.adapters.AlertPointAdapter;
 import com.artfonapps.clientrestore.views.adapters.MainPagerAdapter;
 import com.artfonapps.clientrestore.views.utils.VerticalViewPager;
 import com.dd.CircularProgressButton;
+import com.squareup.otto.Produce;
 import com.squareup.otto.Subscribe;
 
 import org.json.JSONArray;
@@ -59,7 +60,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -238,7 +238,7 @@ public class StartActivity extends AppCompatActivity {
                     AlertDialog.Builder builder = new AlertDialog.Builder(StartActivity.this);
                     contentValues = generateDefaultContentValues();
                     contentValues.put("stage", currentPoint.stage);
-                    logger.log(Methods.location_error, contentValues);
+                    logger.log(Methods.time_warning, contentValues);
                     // (new LogTask()).execute(Methods.time_warning, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
                     builder.setTitle("Предупреждение");
                     builder.setMessage("Предыдущее действие было выполнено менее чем 5 минут назад. Вы уверены, что хотите продолжить?");
@@ -275,7 +275,9 @@ public class StartActivity extends AppCompatActivity {
     @Subscribe
     public void onChangeCurPointEvent(ChangeCurPointEvent changeCurPointEvent) {
         currentPoint = changeCurPointEvent.getCurPoint();
+        currentOperation++;
         logger.log(Methods.change_point, getTrafficContentValues());
+
         refresh();
     }
 
@@ -318,14 +320,15 @@ public class StartActivity extends AppCompatActivity {
     @Subscribe
     public void onLocalDeleteEvent(LocalDeleteEvent localDeleteEvent) {
         int orderId = localDeleteEvent.getCurOrder();
-        Iterator<Order> orderIterator = orders.iterator();
+       /* Iterator<Order> orderIterator = orders.iterator();
         while (orderIterator.hasNext()) {
             Order current = orderIterator.next();
             if (current.getIdListTraffic() == orderId)
                 orderIterator.remove();
-        }
+        }*/
         try {
-
+            setCurPoint();
+            refresh();
             if (localDeleteEvent.isFromPush()) return;
             contentValues = new ContentValues();
             contentValues.put(Fields.ID, orderId);
@@ -337,29 +340,8 @@ public class StartActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        //(new AcceptTask()).execute(order_id, "0");
     }
 
-    /*@Subscribe
-    public void onDeleteEvent(DeleteEvent deleteEvent) {
-        try {
-            points.clear();
-            points.addAll(Helper.getPoints());
-            orders.clear();
-            orders.addAll(Helper.getOrders(points));
-            currentPoint = Helper.getCurPoint();
-            if (currentPoint == null) {
-                currentPoint =
-                        currentOrder != null ?
-                                Helper.getFirstPointInOrder(currentOrder.getIdListTraffic()) :
-                                Helper.getFirstPoint();
-            }
-
-            refresh();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }*/
 
     @Subscribe
     public void onUpdateEvent(UpdateEvent updateEvent){
@@ -406,12 +388,16 @@ public class StartActivity extends AppCompatActivity {
 
             final ContentValues contentValues = generateDefaultContentValues();
             contentValues.put("id_traffic", order_id);
+            currentOperation++;
             logger.log(Methods.view_new_order, contentValues);
+
             final ContentValues reqValues = new ContentValues();
             reqValues.put(Fields.ID, order_id);
             alertDialog.setPositiveButton("Принять", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
+                    currentOperation++;
                     logger.log(Methods.accept, contentValues);
+
                     reqValues.put(Fields.ACCEPTED, 1);
                     communicator.communicate(Methods.accept, reqValues, false);
                     refresh();
@@ -421,7 +407,7 @@ public class StartActivity extends AppCompatActivity {
             });
             alertDialog.setNegativeButton("Отказаться", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-
+                    currentOperation++;
                     logger.log(Methods.reject, contentValues);
                     reqValues.put(Fields.ACCEPTED, 0);
                     communicator.communicate(Methods.reject, reqValues, false);
@@ -437,10 +423,19 @@ public class StartActivity extends AppCompatActivity {
         }
     }
 
+
+
     @Subscribe
     public void onClickEvent(ClickEvent clickEvent){
         JSONObject res = clickEvent.getResponseObject();
+        try {
+            currentOperation = Integer.parseInt(res.getString("currentOperation"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        currentOperation++;
         logger.log(Methods.click_point_loaded, generateDefaultContentValues());
+
         boolean changed = false;
         switch (currentPoint.stage) {
             case 1:
@@ -463,9 +458,13 @@ public class StartActivity extends AppCompatActivity {
         currentPoint.save();
         setCurPoint();
         if (changed) {
+            currentOperation++;
             logger.log(currentPoint != null ?
                     Methods.change_point_auto : Methods.end_route,
                     generateDefaultContentValues());
+
+
+
         }
 
         points.clear();
@@ -479,7 +478,7 @@ public class StartActivity extends AppCompatActivity {
         JSONObject res = loadPointsEvent.getResponseObject();
 
         try {
-
+            currentOperation  = Integer.parseInt(res.getJSONObject("result").getString("currentOperation"));
             Helper.updatePoints(res.getJSONObject("result").getJSONArray("points"));
             points.clear();
             points.addAll(Helper.getPoints());
@@ -492,7 +491,9 @@ public class StartActivity extends AppCompatActivity {
                                 Helper.getFirstPointInOrder(currentOrder.getIdListTraffic()) :
                                 Helper.getFirstPoint();
             }
+            currentOperation++;
             logger.log(Methods.load_points, generateDefaultContentValues());
+
             setCurPoint();
 
             refresh();
@@ -526,12 +527,16 @@ public class StartActivity extends AppCompatActivity {
         }
         contentValues.put("points", arr.toString());
         contentValues.put("curPoint", currentPoint != null ? currentPoint.getIdListTrafficRoute() : -1);
-        contentValues.put("currentOperation", currentOperation);
+        contentValues.put(Fields.CURRENT_OPERATION, currentOperation);
         contentValues.put("currentPosition", Double.toString(currentLocation.getLatitude()) + ":" + Double.toString(currentLocation.getLongitude()));
+        contentValues.put(Fields.PHONE_NUMBER, phoneNumber);
+
+
         return contentValues;
     }
 
     public void onSuccessClick(Point pt) {
+        lastClick = System.currentTimeMillis();
         ContentValues values = new ContentValues();
         values.put(Fields.MOBILE, phoneNumber);
         values.put(Fields.ID, pt.getIdListTrafficRoute());
@@ -601,8 +606,9 @@ public class StartActivity extends AppCompatActivity {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString("PROPERTY_MOBILE", "");
             editor.putString("PASS_CODE", "");
-            editor.putString("CUR_SERVER", JSONParser.domainName);
-            editor.apply();
+            editor.putString("PROPERTY_REG_ID", "");
+            editor.putString("CUR_SERVER", JSONParser.debugDomainName);
+            editor.commit();
             Intent intent = new Intent(StartActivity.this, LoginActivity.class);
             startActivity(intent);
             new Delete().from(Point.class).execute();
@@ -699,9 +705,19 @@ public class StartActivity extends AppCompatActivity {
     };
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         BusProvider.getInstance().register(this);
+
+        if (getIntent().getStringExtra("type") != null &&
+                getIntent().getStringExtra("type").equals("new_order_click")) {
+            getIntent().putExtra("type", "");
+            try {
+                onNewOrderEvent(new NewOrderEvent(new JSONObject( getIntent().getStringExtra("desc"))).setCurOrder(Integer.parseInt( getIntent().getStringExtra("order_id"))));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

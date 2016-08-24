@@ -4,8 +4,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
 
+import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.network.requests.Communicator;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,7 +45,7 @@ public class Logger {
         try {
             JSONObject object = new JSONObject();
 
-            object.put("points", values.get("points"));
+            object.put("points", new JSONArray(values.getAsString("points")));
             object.put("curPoint", values.get("curPoint"));
             object.put("mobileVersion", context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName);
             if (method.equals(Methods.click_point) || method.equals(Methods.time_warning) || method.equals(Methods.location_error))
@@ -52,10 +54,14 @@ public class Logger {
                     || method.equals(Methods.get_new_order) || method.equals(Methods.view_new_order) || method.equals(Methods.change_point_auto)  )
                 object.put("id_traffic", values.get("id_traffic"));
             object.put("method", method);
-            object.put("currentOperation", values.get("currentOperation"));
+            object.put(Fields.CURRENT_OPERATION, values.get(Fields.CURRENT_OPERATION));
             object.put("currentPosition", values.get("currentPosition"));
-
-            communicator.communicate(method, values, true);
+            ContentValues vals = new ContentValues();
+            vals.put(Fields.CURRENT_JSON, object.toString());
+            vals.put(Fields.PHONE_NUMBER, values.getAsString(Fields.PHONE_NUMBER));
+            vals.put(Fields.CURRENT_OPERATION, values.getAsString(Fields.CURRENT_OPERATION));
+            vals.put(Fields.TRAFFIC_ID, values.getAsString("id_traffic"));
+            communicator.communicate(method, vals, true);
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (PackageManager.NameNotFoundException e) {
