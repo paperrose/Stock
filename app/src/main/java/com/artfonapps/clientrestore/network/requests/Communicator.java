@@ -220,7 +220,7 @@ public class Communicator {
                             break;
                         case Methods.remove:
                             BusProvider.getInstance()
-                                    .post(produceDeleteEvent());
+                                    .post(produceRejectEvent(response.body()));
 
                             break;
                         default:

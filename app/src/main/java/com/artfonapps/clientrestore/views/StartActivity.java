@@ -42,6 +42,7 @@ import com.artfonapps.clientrestore.network.events.ErrorEvent;
 import com.artfonapps.clientrestore.network.events.requests.DeleteEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoadPointsEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
+import com.artfonapps.clientrestore.network.events.requests.RejectEvent;
 import com.artfonapps.clientrestore.network.logger.Logger;
 import com.artfonapps.clientrestore.network.logger.Methods;
 import com.artfonapps.clientrestore.network.requests.CookieStorage;
@@ -185,7 +186,7 @@ public class StartActivity extends AppCompatActivity {
         getIntent().putExtra("pass", prefs.getString("PASS_CODE", ""));
         JSONParser.domainName = prefs.getString("CUR_SERVER", JSONParser.productionDomainName);
         if (getIntent().getStringExtra("pass") != null &&
-                getIntent().getStringExtra("pass").equals("3656834")) {
+                getIntent().getStringExtra("pass").equals("563")) {
             DEBUG = true;
         }
         else
@@ -296,11 +297,19 @@ public class StartActivity extends AppCompatActivity {
     private void setCurPoint() {
         currentPoint = Helper.getCurPoint();
         if (currentPoint == null) {
-            currentPoint = Helper.getFirstPoint();
+            if (currentOrder != null){
+               currentPoint =  Helper.getFirstPointInOrder(currentOrder.getIdListTraffic());
+            }
+            else {
+                currentPoint = Helper.getFirstPoint();
+
+            }
+
             if (currentPoint == null) {
                 (findViewById(R.id.endLayout)).setVisibility(View.VISIBLE);
                 return;
             }
+
             currentPoint.setCurItem(true);
             currentPoint.save();
         }
@@ -316,10 +325,7 @@ public class StartActivity extends AppCompatActivity {
                 orderIterator.remove();
         }
         try {
-            Helper.deleteOrder(orderId);
-           // initDB();
-            setCurPoint();
-            refresh();
+
             if (localDeleteEvent.isFromPush()) return;
             contentValues = new ContentValues();
             contentValues.put(Fields.ID, orderId);
@@ -327,14 +333,14 @@ public class StartActivity extends AppCompatActivity {
             logger.log(Methods.remove, generateDefaultContentValues());
             communicator.communicate(Methods.remove, contentValues, false);
 
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         //(new AcceptTask()).execute(order_id, "0");
     }
 
-    @Subscribe
+    /*@Subscribe
     public void onDeleteEvent(DeleteEvent deleteEvent) {
         try {
             points.clear();
@@ -353,11 +359,24 @@ public class StartActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     @Subscribe
     public void onUpdateEvent(UpdateEvent updateEvent){
         loadPoints();
+    }
+
+    @Subscribe
+    public void onRejectEvent(RejectEvent rejectEvent){
+        try {
+            String orderId = rejectEvent.getResponseObject().getJSONObject("result").getString("trafficId");
+            Helper.deleteOrder(Integer.parseInt(orderId));
+            setCurPoint();
+            refresh();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return;
     }
 
     @Subscribe
@@ -393,9 +412,9 @@ public class StartActivity extends AppCompatActivity {
             alertDialog.setPositiveButton("Принять", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     logger.log(Methods.accept, contentValues);
+                    reqValues.put(Fields.ACCEPTED, 1);
                     communicator.communicate(Methods.accept, reqValues, false);
                     refresh();
-                    setCurPoint();
                     dialog.dismiss();
 
                 }
@@ -404,7 +423,8 @@ public class StartActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
 
                     logger.log(Methods.reject, contentValues);
-                    communicator.communicate(Methods.refresh, reqValues, false);
+                    reqValues.put(Fields.ACCEPTED, 0);
+                    communicator.communicate(Methods.reject, reqValues, false);
                     refresh();
                     dialog.dismiss();
                 }
@@ -473,6 +493,7 @@ public class StartActivity extends AppCompatActivity {
                                 Helper.getFirstPoint();
             }
             logger.log(Methods.load_points, generateDefaultContentValues());
+            setCurPoint();
 
             refresh();
         } catch (JSONException e) {

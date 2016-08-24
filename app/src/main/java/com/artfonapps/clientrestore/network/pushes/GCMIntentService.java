@@ -80,7 +80,9 @@ public class GCMIntentService extends IntentService {
             } else if (jobj.optString("type").equals("removed")) {
                 handler.post(new Runnable() {
                     public void run() {
+
                         try {
+                            Helper.deleteOrder(Integer.parseInt(jobj.getString("order_id")));
                             BusProvider.getInstance()
                                     .post(produceDeleteEvent(Integer.parseInt(jobj.getString("order_id"))));
                         } catch (JSONException e) {
@@ -103,6 +105,7 @@ public class GCMIntentService extends IntentService {
 
     @Produce
     public LocalDeleteEvent produceDeleteEvent(int orderId)  {
+
         return new LocalDeleteEvent().setCurOrder(orderId).setFromPush(true);
     }
 
@@ -120,7 +123,7 @@ public class GCMIntentService extends IntentService {
         handler.post(new Runnable() {
             public void run() {
 
-                Context context = getApplicationContext();
+
                 if (Helper.getFirstPointInOrder(Integer.parseInt(order_id)) != null) {
                     return;
                 }
@@ -153,6 +156,7 @@ public class GCMIntentService extends IntentService {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                Context context = getApplicationContext();
                 Intent notificationIntent = new Intent(context, StartActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("type", "new_order_click");
@@ -160,7 +164,7 @@ public class GCMIntentService extends IntentService {
                 bundle.putString("order_id", order_id);
                 notificationIntent.putExtras(bundle);
                // notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-               //         Intent.FLAG_ACTIVITY_SINGLE_TOP);
+ //                       Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
                         new Random().nextInt(), notificationIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT);

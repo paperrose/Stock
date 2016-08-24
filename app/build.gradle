@@ -31,7 +31,7 @@ dependencies {
     compile files('libs/httpcore.jar')
     compile files('libs/httpmime.jar')
     compile 'com.android.support:appcompat-v7:23.2.1'
-    compile 'com.michaelpardo:activeandroid:3.1.0-SNAPSHOT'
+   // compile 'com.michaelpardo:activeandroid:3.1.0-SNAPSHOT'
     compile 'com.android.support:design:23.2.1'
     //compile 'com.google.android.gms:play-services:8.4.0'
     compile 'com.google.android.gms:play-services-gcm:8.4.0'
