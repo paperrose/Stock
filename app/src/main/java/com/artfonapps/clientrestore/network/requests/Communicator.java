@@ -145,6 +145,9 @@ public class Communicator {
                 return;
             }
             switch (method) {
+                case Methods.debug_push:
+                    debugPush(Methods.debug_push, vars);
+                    break;
                 case Methods.accept:
                     accept(Methods.accept, vars);
                     break;
@@ -189,6 +192,7 @@ public class Communicator {
 
                 if (response.code() == 200)
                     switch (method) {
+
                         case Methods.send_code:
                             BusProvider.getInstance()
                                     .post(produceSendCodeEvent(response.body()));
@@ -285,6 +289,15 @@ public class Communicator {
                 CookieStorage.getInstance().getArrayList().get(0).toString(),
                 values.getAsString(Fields.ID),
                 accepted
+        );
+        response.enqueue(commonCommunicate(method));
+    }
+
+    public void debugPush(String method, ContentValues values) throws JSONException {
+        RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
+        Call<ResponseBody> response = communicatorInterface.debugPushTask(
+                CookieStorage.getInstance().getArrayList().get(0).toString(),
+                values.getAsString(Fields.DEVICE_ID)
         );
         response.enqueue(commonCommunicate(method));
     }

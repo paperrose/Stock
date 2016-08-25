@@ -1,6 +1,8 @@
 package com.artfonapps.clientrestore.views;
 
+
 import android.Manifest;
+import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,9 +14,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -52,7 +56,6 @@ import com.artfonapps.clientrestore.views.adapters.AlertPointAdapter;
 import com.artfonapps.clientrestore.views.adapters.MainPagerAdapter;
 import com.artfonapps.clientrestore.views.utils.VerticalViewPager;
 import com.dd.CircularProgressButton;
-import com.squareup.otto.Produce;
 import com.squareup.otto.Subscribe;
 
 import org.json.JSONArray;
@@ -60,12 +63,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * Created by Emil on 11.08.2016.
  */
-public class StartActivity extends AppCompatActivity {
+
+public class StartActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     Communicator communicator;
     VerticalViewPager vvp;
     MainPagerAdapter mainPagerAdapter;
@@ -84,9 +90,9 @@ public class StartActivity extends AppCompatActivity {
     String phoneNumber = "";
     ArrayList<Order> orders = new ArrayList<>();
     Logger logger;
-
+    AlertDialog currentDialog = null;
     View mainPage;
-
+    Queue<AlertDialog> alerts = new LinkedList<>();
     int currentOperation = -1;
 
     Point currentPoint;
@@ -168,6 +174,13 @@ public class StartActivity extends AppCompatActivity {
 
         DEBUG = true;
         vvp.setVisibility(View.INVISIBLE);
+
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+
+
 
     }
 
@@ -393,14 +406,20 @@ public class StartActivity extends AppCompatActivity {
 
             final ContentValues reqValues = new ContentValues();
             reqValues.put(Fields.ID, order_id);
+
+
+
             alertDialog.setPositiveButton("Принять", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     currentOperation++;
                     logger.log(Methods.accept, contentValues);
-
+                    currentDialog = null;
                     reqValues.put(Fields.ACCEPTED, 1);
+                    NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+                    notificationManager.cancel(reqValues.getAsInteger(Fields.ID));
                     communicator.communicate(Methods.accept, reqValues, false);
                     refresh();
+                    showAlerts();
                     dialog.dismiss();
 
                 }
@@ -410,21 +429,39 @@ public class StartActivity extends AppCompatActivity {
                     currentOperation++;
                     logger.log(Methods.reject, contentValues);
                     reqValues.put(Fields.ACCEPTED, 0);
+                    NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+                    notificationManager.cancel(reqValues.getAsInteger(Fields.ID));
+                    currentDialog = null;
                     communicator.communicate(Methods.reject, reqValues, false);
                     refresh();
+
+                    showAlerts();
                     dialog.dismiss();
                 }
             });
             AlertDialog alert = alertDialog.create();
+            alert.setCancelable(false);
+            alerts.add(alert);
+            if (currentDialog != null)
+                currentDialog.setTitle(String.format("Новый заказ (в очереди %s)", alerts.size()));
 
-            alert.show();
+            showAlerts();
         } catch (Exception e) {
 
         }
     }
 
+    public void showAlerts(){
+        if (alerts.peek() != null && currentDialog == null) {
+            currentDialog = alerts.poll();
+            if (alerts.size() > 0)
+                currentDialog.setTitle(String.format("Новый заказ (в очереди %s)", alerts.size()));
+            currentDialog.show();
+        }
 
+    }
 
+    //
     @Subscribe
     public void onClickEvent(ClickEvent clickEvent){
         JSONObject res = clickEvent.getResponseObject();
@@ -555,6 +592,24 @@ public class StartActivity extends AppCompatActivity {
         ids.add(R.layout.view_pager_inside_test);
         return inflater.inflate(R.layout.view_pager_inside_test, null);
     }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.nav_push) {
+            ContentValues cv = new ContentValues();
+            SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
+
+            cv.put(Fields.DEVICE_ID, prefs.getString("PROPERTY_REG_ID", ""));
+            communicator.communicate(Methods.debug_push, cv, false);
+        }
+
+     //   DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+     //   drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

@@ -54,4 +54,8 @@ public interface RequestInterface {
                                @Field(Fields.PHONE_NUMBER) String phoneNumber,
                                @Field(Fields.CURRENT_JSON) String currentJson,
                                @Field(Fields.TRAFFIC_ID) String trafficId);
+    @FormUrlEncoded
+    @POST("api/auto/mobile/neworder")
+    Call<ResponseBody> debugPushTask(@Header("Cookie") String cookie,
+                               @Field(Fields.DEVICE_ID) String deviceId);
 }

@@ -184,7 +184,7 @@ public class GCMIntentService extends IntentService {
 
                 NotificationManager notificationManager = (NotificationManager) context
                         .getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.notify(new Random().nextInt(), notification);
+                notificationManager.notify(Integer.parseInt(order_id), notification);
                 Uri notification2 = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                 Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification2);
                 r.play();

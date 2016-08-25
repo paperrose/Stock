@@ -811,11 +811,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (getIntent().getStringExtra("pass") != null && getIntent().getStringExtra("pass").equals("3656834")) {
+      /*  if (getIntent().getStringExtra("pass") != null && getIntent().getStringExtra("pass").equals("3656834")) {
             menu.findItem(R.id.action_ch_server).setVisible(true);
         } else {
             menu.findItem(R.id.action_ch_server).setVisible(false);
-        }
+        }*/
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -828,7 +828,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_ch_server) {
+      /*  if (id == R.id.action_ch_server) {
             if (JSONParser.domainName.equals(JSONParser.debugDomainName)) {
                 JSONParser.domainName = JSONParser.productionDomainName;
             } else {
@@ -845,7 +845,7 @@ public class MainActivity extends AppCompatActivity {
             new Delete().from(Point.class).execute();
             finish();
             return true;
-        }
+        }*/
         if (id == R.id.action_settings) {
             if (myDrawerLayout != null) {
                 if (myDrawerLayout.getPanelState() != SlidingUpPanelLayout.PanelState.HIDDEN) {

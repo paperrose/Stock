@@ -26,9 +26,6 @@ import com.squareup.otto.Produce;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by paperrose on 01.04.2016.
- */
 public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder> {
 
     //TODO change with recyclerView!!!
