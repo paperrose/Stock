@@ -1,7 +1,6 @@
 package com.artfonapps.clientrestore.views.adapters;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -16,12 +15,11 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.R;
+import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
-
 import com.artfonapps.clientrestore.views.StartActivity;
 import com.squareup.otto.Produce;
 
@@ -88,31 +86,24 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
         }
         holder.removeOrder.setTag(position);
         holder.backLayout.setBackgroundResource(p.isCurrentOrder() ? R.drawable.order_item_drawable : R.color.reStore_pink_light);
-        holder.removeOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                builder.setTitle("Предупреждение")
-                        .setMessage("Удалить заказ?")
-                        .setNegativeButton("Нет",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        dialog.cancel();
-                                    }
-                                })
-                        .setPositiveButton("Да",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        if (mContext instanceof StartActivity) {
-                                            BusProvider.getInstance()
-                                                    .post(produceDeleteEvent(orders.get((Integer)v.getTag())));
-                                        }
-                                    }
-                                });
+        holder.removeOrder.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setTitle("Предупреждение")
+                    .setMessage("Удалить заказ?")
+                    .setNegativeButton("Нет",
+                            (dialog, id) -> {
+                                dialog.cancel();
+                            })
+                    .setPositiveButton("Да",
+                            (dialog, id) -> {
+                                if (mContext instanceof StartActivity) {
+                                    BusProvider.getInstance()
+                                            .post(produceDeleteEvent(orders.get((Integer)v.getTag())));
+                                }
+                            });
 
-                AlertDialog alert = builder.create();
-                alert.show();
-            }
+            AlertDialog alert = builder.create();
+            alert.show();
         });
     }
 

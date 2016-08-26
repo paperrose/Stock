@@ -26,16 +26,14 @@ public class ListsPagerAdapter extends PagerAdapter {
     private LinearLayoutManager mLayoutManager;
 
     public ListsPagerAdapter setPoints(List<Point> points) {
-       // this.points.clear();
-       // this.points.addAll(points);
+
         if (pointsAdapter != null)
             pointsAdapter.refresh(points);
         return this;
     }
 
     public ListsPagerAdapter setOrders(List<Order> orders) {
-       // this.orders.clear();
-        //this.orders.addAll(orders);
+
         if (ordersAdapter != null)
             ordersAdapter.refresh(orders);
         return this;
@@ -66,19 +64,14 @@ public class ListsPagerAdapter extends PagerAdapter {
         View itemView = layoutInflater.inflate(R.layout.list_layout, container, false);
         RecyclerView itemsList = (RecyclerView)itemView.findViewById(R.id.items);
         mLayoutManager = new LinearLayoutManager(context);
-       // mLayoutManager.setStackFromEnd(true);
-        // mLayoutManager.setReverseLayout(true);
 
 
         if (ids.get(position) == R.layout.point_item) {
             itemsList.setAdapter(pointsAdapter);
         } else if (ids.get(position) == R.layout.order_item) {
             itemsList.setAdapter(ordersAdapter);
-         //   itemsList.setDividerHeight(3);
         }
-        //itemsList.setHasFixedSize(true);
         itemsList.setLayoutManager(mLayoutManager);
-        //((TextView)itemView.findViewById(R.id.text)).setText(pages.get(position));
         container.addView(itemView);
         return itemView;
     }

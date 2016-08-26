@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -65,69 +64,60 @@ public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder
         holder.call.setTag(position);
         holder.expand.setTag(position);
         holder.itemPanel.setTag(position);
-        holder.call.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + items.get((Integer)v.getTag()).getContact()));
-                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-                context.startActivity(intent);
+        holder.call.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + items.get((Integer)v.getTag()).getContact()));
+            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                return;
             }
+            context.startActivity(intent);
         });
-        holder.expand.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LinearLayout vwParentRow = (LinearLayout) v.getParent().getParent();
-                LinearLayout ext = (LinearLayout)vwParentRow.findViewById(R.id.extendedPart);
-                ImageButton ib =  (ImageButton)vwParentRow.findViewById(R.id.expand);
-                if (ext.getVisibility() == View.VISIBLE) {
-                    ext.setVisibility(View.GONE);
-                    ib.setImageResource(R.drawable.question);
-                } else {
-                    ext.setVisibility(View.VISIBLE);
-                    ib.setImageResource(R.drawable.arrow);
-                }
+        holder.expand.setOnClickListener(v -> {
+            LinearLayout vwParentRow = (LinearLayout) v.getParent().getParent();
+            LinearLayout ext = (LinearLayout)vwParentRow.findViewById(R.id.extendedPart);
+            ImageButton ib =  (ImageButton)vwParentRow.findViewById(R.id.expand);
+            if (ext.getVisibility() == View.VISIBLE) {
+                ext.setVisibility(View.GONE);
+                ib.setImageResource(R.drawable.question);
+            } else {
+                ext.setVisibility(View.VISIBLE);
+                ib.setImageResource(R.drawable.arrow);
             }
         });
         holder.itemPanel.setBackgroundResource(p.isCurItem() ? R.color.cpb_green : R.color.reStore_pink_light);
-        holder.itemPanel.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Point p0 = items.get((Integer)v.getTag());
-                Point p2 = Helper.getCurPoint();
-                if (p0.isCurItem()) return false;
-           /*     for (int i = 0; i < items.size(); i++) {
-                    Point p2 = items.get(i);
-                    if (p2.isCurItem()) {
-                        if (p2.getType() == 1 && p0.getType() != 1 && p0.getIdListTraffic() == p2.getIdListTraffic()) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                            builder.setTitle("Предупреждение")
-                                    .setMessage("Невозможно выбрать точку выгрузки во время загрузки в рамках одного заказа")
-                                    .setCancelable(false)
-                                    .setNegativeButton("ОК",
-                                            new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int id) {
-                                                    dialog.cancel();
-                                                }
-                                            });
-                            AlertDialog alert = builder.create();
-                            alert.show();
-                            return false;
-                        }
+        holder.itemPanel.setOnLongClickListener(v -> {
+            Point p0 = items.get((Integer)v.getTag());
+            Point p2 = Helper.getCurPoint();
+            if (p0.isCurItem()) return false;
+       /*     for (int i = 0; i < items.size(); i++) {
+                Point p2 = items.get(i);
+                if (p2.isCurItem()) {
+                    if (p2.getType() == 1 && p0.getType() != 1 && p0.getIdListTraffic() == p2.getIdListTraffic()) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setTitle("Предупреждение")
+                                .setMessage("Невозможно выбрать точку выгрузки во время загрузки в рамках одного заказа")
+                                .setCancelable(false)
+                                .setNegativeButton("ОК",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        });
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                        return false;
                     }
-                    items.get(i).setCurItem(false);
-                }*/
-                if (p2 != null)
-                    p2.setCurItem(false);
-                p0.setCurItem(true);
-                notifyDataSetChanged();
-                if (context instanceof StartActivity) {
-                    BusProvider.getInstance()
-                            .post(produceChangeCurPointEvent(p0));
                 }
-                return false;
+                items.get(i).setCurItem(false);
+            }*/
+            if (p2 != null)
+                p2.setCurItem(false);
+            p0.setCurItem(true);
+            notifyDataSetChanged();
+            if (context instanceof StartActivity) {
+                BusProvider.getInstance()
+                        .post(produceChangeCurPointEvent(p0));
             }
+            return false;
         });
     }
 
