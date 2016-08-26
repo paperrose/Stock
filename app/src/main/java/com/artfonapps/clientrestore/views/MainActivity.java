@@ -90,6 +90,10 @@ public class MainActivity extends AppCompatActivity {
     private SlidingUpPanelLayout myDrawerLayout;
     private SlidingUpPanelLayout myDrawerLayout2;
     private LinearLayout myDrawerLayer;
+
+
+
+    private String apiVersion = null;
     JSONObject test;
     String testStr = "{\"status\":\"success\",\"points\":[{\"id\":30,\"subtasks\":{\"arrival_date\":null,\"arrival_leave_date\":null,\"start_load_date\":null},\"plan_arrival_date\":1459760400,\"name\":\"Галерея\",\"doc\":\"2342345\",\"type\":\"1\",\"phone1\":\"+79995554444\",\"client_name\":null,\"coordinates\":\"59.955516:30.294946\"},{\"id\":31,\"subtasks\":{\"arrival_date\":1459779975,\"arrival_leave_date\":null,\"start_load_date\":1459770439},\"plan_arrival_date\":1459764000,\"name\":null,\"doc\":\"2342345\",\"type\":null,\"phone1\":\"+79995554444\",\"client_name\":null,\"coordinates\":null},{\"id\":32,\"subtasks\":{\"arrival_date\":null,\"arrival_leave_date\":null,\"start_load_date\":null},\"plan_arrival_date\":1459767600,\"name\":null,\"doc\":\"2342345\",\"type\":\"2\",\"phone1\":\"+79995554444\",\"client_name\":null,\"coordinates\":null}]}";
     private LocationManager locationManager;

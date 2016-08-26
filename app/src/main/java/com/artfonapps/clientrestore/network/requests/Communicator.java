@@ -4,25 +4,24 @@ import android.content.ContentValues;
 import android.util.Log;
 
 import com.artfonapps.clientrestore.constants.Fields;
+import com.artfonapps.clientrestore.network.events.ErrorEvent;
+import com.artfonapps.clientrestore.network.events.local.LogEvent;
+import com.artfonapps.clientrestore.network.events.local.LogoutEvent;
 import com.artfonapps.clientrestore.network.events.requests.AcceptEvent;
 import com.artfonapps.clientrestore.network.events.requests.ClickEvent;
 import com.artfonapps.clientrestore.network.events.requests.DeleteEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoadPointsEvent;
-import com.artfonapps.clientrestore.network.events.local.LogEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
-import com.artfonapps.clientrestore.network.events.local.LogoutEvent;
 import com.artfonapps.clientrestore.network.events.requests.RejectEvent;
 import com.artfonapps.clientrestore.network.events.requests.SendCodeEvent;
 import com.artfonapps.clientrestore.network.events.requests.SendPhoneEvent;
 import com.artfonapps.clientrestore.network.logger.Methods;
-import com.artfonapps.clientrestore.network.events.ErrorEvent;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
 import com.squareup.otto.Produce;
 
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -75,7 +74,7 @@ public class Communicator {
 
 
         retrofit = new Retrofit.Builder()
-                .baseUrl(debugDomainName)
+                .baseUrl(domainName)
                 .callFactory(okHttpClient)
                 .build();
     }
@@ -260,11 +259,22 @@ public class Communicator {
         response.enqueue(commonCommunicate(Methods.login));
     }
 
+    private String getCurrentCookies() {
+        try {
+            return CookieStorage.getInstance().getArrayList().get(0).toString();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
 
     public void jobPoint(ContentValues values) throws JSONException {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
         Call<ResponseBody> response = communicatorInterface.reqTask(
-                CookieStorage.getInstance().getArrayList().get(0).toString(),
+                getCurrentCookies(),
                 values.getAsString(Fields.MOBILE),
                 values.getAsString(Fields.ID),
                 values.getAsString(Fields.STAGE),
@@ -276,7 +286,7 @@ public class Communicator {
     public void job(ContentValues values) throws JSONException {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
         Call<ResponseBody> response = communicatorInterface.reqJobTask(
-                CookieStorage.getInstance().getArrayList().get(0).toString(),
+                getCurrentCookies(),
                 values.getAsString(Fields.MOBILE)
         );
         response.enqueue(commonCommunicate(Methods.load_points));
@@ -286,7 +296,7 @@ public class Communicator {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
         String accepted = values.getAsString(Fields.ACCEPTED);
         Call<ResponseBody> response = communicatorInterface.acceptTask(
-                CookieStorage.getInstance().getArrayList().get(0).toString(),
+                getCurrentCookies(),
                 values.getAsString(Fields.ID),
                 accepted
         );
@@ -296,7 +306,7 @@ public class Communicator {
     public void debugPush(String method, ContentValues values) throws JSONException {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
         Call<ResponseBody> response = communicatorInterface.debugPushTask(
-                CookieStorage.getInstance().getArrayList().get(0).toString(),
+                getCurrentCookies(),
                 values.getAsString(Fields.DEVICE_ID)
         );
         response.enqueue(commonCommunicate(method));
@@ -305,7 +315,7 @@ public class Communicator {
     public void register(String method, ContentValues values) throws JSONException {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
         Call<ResponseBody> response = communicatorInterface.register(
-                CookieStorage.getInstance().getArrayList().get(0).toString(),
+                getCurrentCookies(),
                 values.getAsString(Fields.TYPE),
                 values.getAsString(Fields.MOBILE),
                 values.getAsString(Fields.DEVICE_ID),
@@ -319,7 +329,7 @@ public class Communicator {
 
         String cookies = "";
         try {
-            cookies = CookieStorage.getInstance().getArrayList().get(0).toString();
+            cookies = getCurrentCookies();
         }
         catch (IndexOutOfBoundsException e){
             Log.i("Empty cookie", method);

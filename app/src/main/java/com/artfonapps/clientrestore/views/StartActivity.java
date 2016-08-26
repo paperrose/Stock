@@ -3,7 +3,6 @@ package com.artfonapps.clientrestore.views;
 
 import android.Manifest;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -68,8 +67,17 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     TextView point_name;
     ArrayList<Point> points = new ArrayList<Point>();
     TextView arrivalTime;
+    private String apiVersion;
     BusStartEventsListener eventsBus;
     private LocationManager locationManager;
+
+    public String getApiVersion() {
+        return apiVersion;
+    }
+
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
+    }
 
     public String getPhoneNumber() {
         return phoneNumber;
@@ -185,7 +193,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         //       DEBUG = (getIntent().getStringExtra("pass") != null &&
         //               getIntent().getStringExtra("pass").equals("3656834"));
 
-        DEBUG = true;
+        DEBUG = false;
         vvp.setVisibility(View.INVISIBLE);
 
 
@@ -236,10 +244,9 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         pointCall = (ImageButton) findViewById(R.id.callPoint);
         arrivalTime = (TextView) findViewById(R.id.taskDescription);
         fab = (CircularProgressButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (currentLocation.distanceTo(targetLocation) > 1000 && DEBUG == false) {
+        if (fab != null) {
+            fab.setOnClickListener(view -> {
+                if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(StartActivity.this);
                     contentValues = generateDefaultContentValues();
                     contentValues.put("stage", currentPoint.stage);
@@ -248,10 +255,8 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                     builder.setMessage("Вы слишком далеко от места назначения. Ваши координаты: " +
                             currentLocation.getLatitude() + ":" + currentLocation.getLongitude() + ". Место находится тут: " +
                             targetLocation.getLatitude() + ":" + targetLocation.getLongitude());
-                    builder.setNeutralButton("ОК", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
+                    builder.setNeutralButton("ОК", (dialog, which) -> {
+                        dialog.dismiss();
                     });
                     AlertDialog alert = builder.create();
                     alert.show();
@@ -266,18 +271,13 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                     builder.setTitle("Предупреждение");
                     builder.setMessage("Предыдущее действие было выполнено менее чем 5 минут назад. Вы уверены, что хотите продолжить?");
 
-                    builder.setPositiveButton("Да", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            onSuccessClick(currentPoint);
-                            dialog.dismiss();
-                        }
+                    builder.setPositiveButton("Да", (dialog, which) -> {
+                        onSuccessClick(currentPoint);
+                        dialog.dismiss();
                     });
 
-                    builder.setNegativeButton("Нет", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
+                    builder.setNegativeButton("Нет", (dialog, which) -> {
+                        dialog.dismiss();
                     });
                     AlertDialog alert = builder.create();
                     alert.show();
@@ -285,8 +285,8 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                     if (currentPoint != null)
                         onSuccessClick(currentPoint);
                 }
-            }
-        });
+            });
+        }
     }
 
     public void loadPoints() {

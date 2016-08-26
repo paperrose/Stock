@@ -197,6 +197,7 @@ public class BusStartEventsListener {
                 start.incCurrentOperation();
                 logger.log(Methods.accept, contentValues);
                 currentDialog = null;
+
                 reqValues.put(Fields.ACCEPTED, 1);
                 NotificationManager notificationManager = (NotificationManager) start.getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.cancel(reqValues.getAsInteger(Fields.ID));
@@ -210,9 +211,19 @@ public class BusStartEventsListener {
                 start.incCurrentOperation();
                 logger.log(Methods.reject, contentValues);
                 reqValues.put(Fields.ACCEPTED, 0);
+                if (start.getApiVersion() == null){
+                    try {
+                        Helper.deleteOrder(order_id);
+                        start.setCurPoint();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 NotificationManager notificationManager = (NotificationManager) start.getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.cancel(reqValues.getAsInteger(Fields.ID));
                 currentDialog = null;
+
                 communicator.communicate(Methods.reject, reqValues, false);
                 start.refresh();
 
@@ -235,7 +246,7 @@ public class BusStartEventsListener {
     public void onClickEvent(ClickEvent clickEvent) {
         JSONObject res = clickEvent.getResponseObject();
         try {
-            start.setCurrentOperation(Integer.parseInt(res.getString("currentOperation")));
+            start.setCurrentOperation(Integer.parseInt(res.getJSONObject("result").getString("currentOperation")));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -253,6 +264,7 @@ public class BusStartEventsListener {
                 currentPoint.stage = 3;
                 break;
             case 3:
+                currentPoint.setFinishDatetime(System.currentTimeMillis());
                 currentPoint.setFinishDatetime(System.currentTimeMillis());
                 currentPoint.stage = 4;
                 currentPoint.setCurItem(false);
@@ -283,13 +295,20 @@ public class BusStartEventsListener {
         JSONObject res = loadPointsEvent.getResponseObject();
 
         try {
-            start.setCurrentOperation(Integer.parseInt(res.getString("currentOperation")));
+
+            start.setCurrentOperation(Integer.parseInt(res.getJSONObject("result").getString("currentOperation")));
+            start.setApiVersion(res.getJSONObject("result").getString("version"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        try {
             Helper.updatePoints(res.getJSONObject("result").getJSONArray("points"));
-         //   points.clear();
-          //  points.addAll(Helper.getPoints());
-          //  orders.clear();
-          //  orders.addAll(Helper.getOrders(points));
-         //   start = Helper.getCurPoint();
+            //   points.clear();
+            //  points.addAll(Helper.getPoints());
+            //  orders.clear();
+            //  orders.addAll(Helper.getOrders(points));
+            //   start = Helper.getCurPoint();
          /*   if (currentPoint == null) {
                 start.setCurrentPoint(currentOrder != null ?
                                 Helper.getFirstPointInOrder(currentOrder.getIdListTraffic()) :
@@ -299,10 +318,6 @@ public class BusStartEventsListener {
             start.setCurPoint();
             start.refresh();
             logger.log(Methods.load_points, start.generateDefaultContentValues());
-
-
-
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
