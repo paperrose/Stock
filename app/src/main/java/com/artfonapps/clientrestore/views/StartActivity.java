@@ -198,7 +198,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         //       DEBUG = (getIntent().getStringExtra("pass") != null &&
         //               getIntent().getStringExtra("pass").equals("3656834"));
 
-        DEBUG = false;
+        DEBUG = true;
         vvp.setVisibility(View.INVISIBLE);
 
 

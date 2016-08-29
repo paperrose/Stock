@@ -13,6 +13,7 @@ import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.db.AlertPointItem;
 import com.artfonapps.clientrestore.db.Helper;
+import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
 import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
@@ -120,9 +121,25 @@ public class BusStartEventsListener {
     @Subscribe
     public void onLocalDeleteEvent(LocalDeleteEvent localDeleteEvent) {
 
+        //Переписать на int contain
         int orderId = localDeleteEvent.getCurOrder();
+        ArrayList<Point> points = new ArrayList<>();
+        ArrayList<Order> orders = new ArrayList<>();
+        boolean orderExist = false;
 
         try {
+
+            points.addAll(Helper.getPoints());
+            orders.addAll(Helper.getOrders(points));
+            for (Order order : orders) {
+                orderExist = orderId == order.getIdListTraffic();
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            Helper.deleteOrder(orderId);
             start.setCurPoint();
             start.refresh();
             if (localDeleteEvent.isFromPush()) {
@@ -134,12 +151,15 @@ public class BusStartEventsListener {
                 ArrayList<AlertPointItem> points2 = new ArrayList<>();
                 try {
                     JSONArray pts = localDeleteEvent.getPoints();
-                    for (int i = 0; i < pts.length(); i++) {
-                        points2.add(new AlertPointItem(pts.getJSONObject(i)));
+                    for (Point point : points) {
+                        points2.add(new AlertPointItem(point));
                     }
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
+                if(!orderExist)
+                    return;
+
                 AlertPointAdapter alertPointAdapter = new AlertPointAdapter(CookieStorage.startActivity, R.layout.alert_point_item, points2);
                 alertList.setAdapter(alertPointAdapter);
                 alertDialog.setView(convertView);

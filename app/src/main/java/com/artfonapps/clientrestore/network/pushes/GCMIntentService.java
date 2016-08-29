@@ -93,9 +93,9 @@ public class GCMIntentService extends IntentService {
                         for (Point pt : pts) {
                             arr.put(pt.getJsonDesc());
                         }
-                        Helper.deleteOrder(Integer.parseInt(jobj.getString("order_id")));
                         BusProvider.getInstance()
                                 .post(produceDeleteEvent(Integer.parseInt(jobj.getString("order_id")), arr));
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

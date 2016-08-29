@@ -54,6 +54,12 @@ public class AlertPointItem {
         this.planDatetime = Long.valueOf(desc.getString(JsonFields.PLAN_ARRIVAL_DATETIME).equals(Point.NULL_STR) ? 0 : desc.getLong(JsonFields.PLAN_ARRIVAL_DATETIME));
     }
 
+    public AlertPointItem(Point point){
+        this.address = point.address;
+        this.point = point.point;
+        this.planDatetime = point.planDatetime;
+    }
+
     public JSONObject getJsonDesc() throws JSONException {
         JSONObject desc = new JSONObject();
         desc.put(JsonFields.PLAN_ARRIVAL_DATETIME, this.planDatetime);
