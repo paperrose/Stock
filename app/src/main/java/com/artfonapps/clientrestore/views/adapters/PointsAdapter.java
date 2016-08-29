@@ -25,6 +25,9 @@ import com.squareup.otto.Produce;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder> {
 
     //TODO change with recyclerView!!!
@@ -131,28 +134,29 @@ public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.point)
         TextView point;
+        @BindView(R.id.typePoint)
         TextView type;
+        @BindView(R.id.plan)
         TextView datetime;
+        @BindView(R.id.address)
         TextView address;
+        @BindView(R.id.document)
         TextView doc;
+        @BindView(R.id.client)
         TextView client;
+        @BindView(R.id.contact)
         TextView contact;
+        @BindView(R.id.phoneCall)
         ImageButton call;
+        @BindView(R.id.expand)
         ImageButton expand;
+        @BindView(R.id.itemPanel)
         LinearLayout itemPanel;
         public ViewHolder(View view) {
             super(view);
-            point = (TextView) view.findViewById(R.id.point);
-            type = (TextView) view.findViewById(R.id.typePoint);
-            datetime = (TextView) view.findViewById(R.id.plan);
-            address = (TextView) view.findViewById(R.id.address);
-            doc = (TextView) view.findViewById(R.id.document);
-            client = (TextView) view.findViewById(R.id.client);
-            contact = (TextView) view.findViewById(R.id.contact);
-            call = (ImageButton) view.findViewById(R.id.phoneCall);
-            expand = (ImageButton) view.findViewById(R.id.expand);
-            itemPanel = (LinearLayout)view.findViewById(R.id.itemPanel);
+            ButterKnife.bind(this, view);
         }
     }
 

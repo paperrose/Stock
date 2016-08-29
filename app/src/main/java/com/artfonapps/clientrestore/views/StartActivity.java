@@ -49,24 +49,42 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 /**
  * Created by Emil on 11.08.2016.
  */
 
 public class StartActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     Communicator communicator;
-    VerticalViewPager vvp;
+
     MainPagerAdapter mainPagerAdapter;
     boolean DEBUG;
     long lastClick = 0;
+
+    @BindView(R.id.vvp)
+    VerticalViewPager vvp;
+    @BindView(R.id.fab)
     CircularProgressButton fab;
+    @BindView(R.id.taskClient)
     TextView clientName;
+    @BindView(R.id.callPoint)
     ImageButton pointCall;
+    @BindView(R.id.taskDocument)
     TextView doc;
+    @BindView(R.id.taskAddress)
     TextView address;
+    @BindView(R.id.point)
     TextView point_name;
-    ArrayList<Point> points = new ArrayList<Point>();
+    @BindView(R.id.taskDescription)
     TextView arrivalTime;
+    @BindView(R.id.textAutorize)
+    TextView textAuthorize;
+
+    ArrayList<Point> points = new ArrayList<Point>();
+
     private String apiVersion;
     BusStartEventsListener eventsBus;
     private LocationManager locationManager;
@@ -148,7 +166,8 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         }
         pages = new ArrayList<>();
         ids = new ArrayList<>();
-        vvp = (VerticalViewPager) findViewById(R.id.vvp);
+        ButterKnife.bind(this);
+     //   vvp = (VerticalViewPager) findViewById(R.id.vvp);
         pages.add(createVPPage());
         initElements();
         pages.add(mainPage);
@@ -198,7 +217,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         //       DEBUG = (getIntent().getStringExtra("pass") != null &&
         //               getIntent().getStringExtra("pass").equals("3656834"));
 
-        DEBUG = true;
+      //  DEBUG = true;
         vvp.setVisibility(View.INVISIBLE);
 
 
@@ -242,55 +261,58 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
     private void initElements() {
         mainPage = createMainPage();
-        clientName = (TextView) findViewById(R.id.taskClient);
+      /*  clientName = (TextView) findViewById(R.id.taskClient);
         doc = (TextView) findViewById(R.id.taskDocument);
         address = (TextView) findViewById(R.id.taskAddress);
         point_name = (TextView) findViewById(R.id.point);
         pointCall = (ImageButton) findViewById(R.id.callPoint);
         arrivalTime = (TextView) findViewById(R.id.taskDescription);
-        fab = (CircularProgressButton) findViewById(R.id.fab);
-        if (fab != null) {
-            fab.setOnClickListener(view -> {
-                if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(StartActivity.this);
-                    contentValues = generateDefaultContentValues();
-                    contentValues.put("stage", currentPoint.stage);
-                    logger.log(Methods.location_error, contentValues);
-                    builder.setTitle("Предупреждение");
-                    builder.setMessage("Вы слишком далеко от места назначения. Ваши координаты: " +
-                            currentLocation.getLatitude() + ":" + currentLocation.getLongitude() + ". Место находится тут: " +
-                            targetLocation.getLatitude() + ":" + targetLocation.getLongitude());
-                    builder.setNeutralButton("ОК", (dialog, which) -> {
-                        dialog.dismiss();
-                    });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                    return;
-                }
-                if ((System.currentTimeMillis() - lastClick) / 1000 < 300) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(StartActivity.this);
-                    contentValues = generateDefaultContentValues();
-                    contentValues.put("stage", currentPoint.stage);
-                    logger.log(Methods.time_warning, contentValues);
-                    // (new LogTask()).execute(Methods.time_warning, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
-                    builder.setTitle("Предупреждение");
-                    builder.setMessage("Предыдущее действие было выполнено менее чем 5 минут назад. Вы уверены, что хотите продолжить?");
+        fab = (CircularProgressButton) findViewById(R.id.fab);*/
+       // fab.setOnClickListener(view -> );
+    }
 
-                    builder.setPositiveButton("Да", (dialog, which) -> {
-                        onSuccessClick(currentPoint);
-                        dialog.dismiss();
-                    });
+    @OnClick(R.id.fab)
+    public void clickFab() {
+        {
+            if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(StartActivity.this);
+                contentValues = generateDefaultContentValues();
+                contentValues.put("stage", currentPoint.stage);
+                logger.log(Methods.location_error, contentValues);
+                builder.setTitle("Предупреждение");
+                builder.setMessage("Вы слишком далеко от места назначения. Ваши координаты: " +
+                        currentLocation.getLatitude() + ":" + currentLocation.getLongitude() + ". Место находится тут: " +
+                        targetLocation.getLatitude() + ":" + targetLocation.getLongitude());
+                builder.setNeutralButton("ОК", (dialog, which) -> {
+                    dialog.dismiss();
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
+                return;
+            }
+            if ((System.currentTimeMillis() - lastClick) / 1000 < 300) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(StartActivity.this);
+                contentValues = generateDefaultContentValues();
+                contentValues.put("stage", currentPoint.stage);
+                logger.log(Methods.time_warning, contentValues);
+                // (new LogTask()).execute(Methods.time_warning, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
+                builder.setTitle("Предупреждение");
+                builder.setMessage("Предыдущее действие было выполнено менее чем 5 минут назад. Вы уверены, что хотите продолжить?");
 
-                    builder.setNegativeButton("Нет", (dialog, which) -> {
-                        dialog.dismiss();
-                    });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                } else {
-                    if (currentPoint != null)
-                        onSuccessClick(currentPoint);
-                }
-            });
+                builder.setPositiveButton("Да", (dialog, which) -> {
+                    onSuccessClick(currentPoint);
+                    dialog.dismiss();
+                });
+
+                builder.setNegativeButton("Нет", (dialog, which) -> {
+                    dialog.dismiss();
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
+            } else {
+                if (currentPoint != null)
+                    onSuccessClick(currentPoint);
+            }
         }
     }
 
@@ -478,16 +500,21 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         address.setText(currentPoint.getAddress());
         point_name.setText(currentPoint.getPoint());
         arrivalTime.setText(currentPoint.getFormatPlanDatetime());
-        pointCall.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + currentPoint.getContact()));
-            if (ActivityCompat.checkSelfPermission(StartActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-            startActivity(intent);
-        });
+      /*  pointCall.setOnClickListener(v -> {
+
+        });*/
 
 
         //   mainPagerAdapter.notifyDataSetChanged();
+    }
+
+    @OnClick(R.id.callPoint)
+    public void callPoint() {
+        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + currentPoint.getContact()));
+        if (ActivityCompat.checkSelfPermission(StartActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        startActivity(intent);
     }
 
     // private void

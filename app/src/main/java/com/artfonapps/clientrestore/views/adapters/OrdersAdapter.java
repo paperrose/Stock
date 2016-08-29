@@ -26,6 +26,9 @@ import com.squareup.otto.Produce;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by paperrose on 11.07.2016.
  */
@@ -114,15 +117,15 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-
+        @BindView(R.id.remove_order)
         ImageButton removeOrder;
+        @BindView(R.id.card)
         LinearLayout card;
+        @BindView(R.id.backLayout)
         LinearLayout backLayout;
         public ViewHolder(View view) {
             super(view);
-            removeOrder = (ImageButton) view.findViewById(R.id.remove_order);
-            card = (LinearLayout)view.findViewById(R.id.card);
-            backLayout = (LinearLayout)view.findViewById(R.id.backLayout);
+            ButterKnife.bind(this, view);
         }
     }
 

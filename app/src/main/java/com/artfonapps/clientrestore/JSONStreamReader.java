@@ -1,7 +1,5 @@
 package com.artfonapps.clientrestore;
 
-import com.google.gson.stream.JsonReader;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +15,7 @@ import java.io.InputStreamReader;
 //TODO delete after refactoring
 
 public class JSONStreamReader {
-    public static void readJsonStreamToTr(String jsonStr, JSONArray arr) throws IOException {
+ /*   public static void readJsonStreamToTr(String jsonStr, JSONArray arr) throws IOException {
         JsonReader reader = null;
         try {
             reader = new JsonReader(new InputStreamReader(new ByteArrayInputStream(jsonStr.getBytes()), "UTF-8"));
@@ -49,6 +47,6 @@ public class JSONStreamReader {
         reader.endObject();
         return obj;
     }
-
+*/
 
 }
