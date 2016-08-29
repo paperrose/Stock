@@ -37,7 +37,7 @@ import retrofit2.Retrofit;
  */
 public class Communicator {
     private static final String TAG = "CommunicatorStock";
-    public static String debugDomainName = "http://192.168.0.143:8080/";
+    public static String debugDomainName = "http://95.213.191.92:8098/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
 
@@ -74,7 +74,7 @@ public class Communicator {
 
 
         retrofit = new Retrofit.Builder()
-                .baseUrl(domainName)
+                .baseUrl(debugDomainName)
                 .callFactory(okHttpClient)
                 .build();
     }
@@ -215,7 +215,7 @@ public class Communicator {
                         case Methods.login:
                             if (!CookieStorage.getInstance().getArrayList().isEmpty())
                                 CookieStorage.getInstance().getArrayList().remove(0);
-                            CookieStorage.getInstance().getArrayList().add(response.headers().get("Set-Cookie").replaceAll("HttpOnly;", ""));
+                            CookieStorage.getInstance().getArrayList().add(0, response.headers().get("Set-Cookie").replaceAll("HttpOnly;", ""));
                             BusProvider.getInstance()
                                     .post(produceLoginEvent(response.body()));
                             break;

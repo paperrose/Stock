@@ -161,8 +161,21 @@ public class LoginActivity extends AppCompatActivity {
             gcm.unregister();
         } catch (Exception e) {}
         setContentView(R.layout.activity_login);
+        SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
+
         eventsBus = BusLoginEventsListener.INSTANCE.setActivity(this);
         communicator = Communicator.INSTANCE;
+
+
+
+        ContentValues loginValues = new ContentValues();
+        loginValues.put(Fields.LOGIN, "admin");
+        loginValues.put(Fields.PASSWORD, "123456");
+        communicator.communicate(Methods.login, loginValues, false);
+
+
+
+
         next = (CircularProgressButton)findViewById(R.id.nextStep);
         text = (TextView)findViewById(R.id.numberText);
         edit = (EditText)findViewById(R.id.number);

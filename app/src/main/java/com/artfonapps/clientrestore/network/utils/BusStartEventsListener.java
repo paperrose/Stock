@@ -3,13 +3,10 @@ package com.artfonapps.clientrestore.network.utils;
 import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.artfonapps.clientrestore.R;
@@ -24,13 +21,11 @@ import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
 import com.artfonapps.clientrestore.network.events.pushes.UpdateEvent;
 import com.artfonapps.clientrestore.network.events.requests.ClickEvent;
 import com.artfonapps.clientrestore.network.events.requests.LoadPointsEvent;
-import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
 import com.artfonapps.clientrestore.network.events.requests.RejectEvent;
 import com.artfonapps.clientrestore.network.logger.Logger;
 import com.artfonapps.clientrestore.network.logger.Methods;
 import com.artfonapps.clientrestore.network.requests.Communicator;
 import com.artfonapps.clientrestore.network.requests.CookieStorage;
-import com.artfonapps.clientrestore.views.LoginActivity;
 import com.artfonapps.clientrestore.views.StartActivity;
 import com.artfonapps.clientrestore.views.adapters.AlertPointAdapter;
 import com.squareup.otto.Subscribe;
@@ -100,10 +95,17 @@ public class BusStartEventsListener {
         start.refresh();
     }
 
-    @Subscribe
+ /*   @Subscribe
     public void onLoginEvent(LoginEvent loginEvent) {
         ((TextView) start.findViewById(R.id.textAutorize)).setText("Загрузка данных...");
         SharedPreferences prefs = start.getSharedPreferences("GCM_prefs", 0);
+        if (! CookieStorage.getInstance().getArrayList().get(0).isEmpty()) {
+
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("COOKIE_STR", CookieStorage.getInstance().getArrayList().get(0));
+            editor.commit();
+        }
+
         start.setPhoneNumber(prefs.getString("PROPERTY_MOBILE", ""));
         if (start.getPhoneNumber().equals("")) {
             Intent intent = new Intent(start, LoginActivity.class);
@@ -113,7 +115,7 @@ public class BusStartEventsListener {
             logger.log(Methods.load_points, start.generateDefaultContentValues());
             start.loadPoints();
         }
-    }
+    }*/
 
     @Subscribe
     public void onLocalDeleteEvent(LocalDeleteEvent localDeleteEvent) {
@@ -123,7 +125,38 @@ public class BusStartEventsListener {
         try {
             start.setCurPoint();
             start.refresh();
-            if (localDeleteEvent.isFromPush()) return;
+            if (localDeleteEvent.isFromPush()) {
+
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(CookieStorage.startActivity);
+                LayoutInflater inflater = LayoutInflater.from(CookieStorage.startActivity);
+                View convertView = inflater.inflate(R.layout.alert_layout, null);
+                ListView alertList = (ListView) convertView.findViewById(R.id.alertList);
+                ArrayList<AlertPointItem> points2 = new ArrayList<>();
+                try {
+                    JSONArray pts = localDeleteEvent.getPoints();
+                    for (int i = 0; i < pts.length(); i++) {
+                        points2.add(new AlertPointItem(pts.getJSONObject(i)));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                AlertPointAdapter alertPointAdapter = new AlertPointAdapter(CookieStorage.startActivity, R.layout.alert_point_item, points2);
+                alertList.setAdapter(alertPointAdapter);
+                alertDialog.setView(convertView);
+                alertDialog.setTitle("Заказ был удален");
+
+                alertDialog.setPositiveButton("ОК", (dialog, which) -> {
+                    currentDialog = null;
+                    showAlerts();
+                    dialog.dismiss();
+                });
+                AlertDialog alert = alertDialog.create();
+                alert.setCancelable(false);
+                alerts.add(alert);
+                showAlerts();
+
+                return;
+            }
             ContentValues contentValues = new ContentValues();
             contentValues.put(Fields.ID, orderId);
             contentValues.put(Fields.ACCEPTED, 0);
@@ -298,7 +331,7 @@ public class BusStartEventsListener {
 
             start.setCurrentOperation(Integer.parseInt(res.getJSONObject("result").getString("currentOperation")));
             start.setApiVersion(res.getJSONObject("result").getString("version"));
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

@@ -13,12 +13,12 @@ public class CookieStorage {
     public static MainActivity activity;
     public static StartActivity startActivity;
 
-    private ArrayList<Object> arrayList;
+    private ArrayList<String> arrayList;
 
     private static CookieStorage instance;
 
     private CookieStorage(){
-        arrayList = new ArrayList<Object>();
+        arrayList = new ArrayList<>();
     }
 
     public static CookieStorage getInstance(){
@@ -28,7 +28,7 @@ public class CookieStorage {
         return instance;
     }
 
-    public ArrayList<Object> getArrayList() {
+    public ArrayList<String> getArrayList() {
         return arrayList;
     }
 

@@ -138,6 +138,8 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         initSettings();
         initUtils();
         CookieStorage.startActivity = StartActivity.this;
+        SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
+        CookieStorage.getInstance().getArrayList().add(0, prefs.getString("COOKIE_STR", ""));
         eventsBus = BusStartEventsListener.INSTANCE.setActivity(this);
         try {
             initDB();
@@ -179,12 +181,15 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                 }
             }
         });
-        if (CookieStorage.getInstance().getArrayList().isEmpty() || CookieStorage.getInstance().getArrayList().get(0).toString().equals("")) {
-            ((TextView) findViewById(R.id.textAutorize)).setText("Авторизация...");
-            ContentValues loginValues = new ContentValues();
+        if (CookieStorage.getInstance().getArrayList().isEmpty() || CookieStorage.getInstance().getArrayList().get(0).toString().isEmpty()) {
+         //   ((TextView) findViewById(R.id.textAutorize)).setText("Авторизация...");
+       /*    ContentValues loginValues = new ContentValues();
             loginValues.put(Fields.LOGIN, "admin");
             loginValues.put(Fields.PASSWORD, "123456");
-            communicator.communicate(Methods.login, loginValues, false);
+            communicator.communicate(Methods.login, loginValues, false);*/
+            Intent intent = new Intent(StartActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
         } else {
             ((TextView) findViewById(R.id.textAutorize)).setText("Загрузка данных...");
             logger.log(Methods.load_points, generateDefaultContentValues());
@@ -385,7 +390,6 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.action_settings) {
             vvp.setVisibility(View.VISIBLE);
             if (mainPagerAdapter.hvp.getCurrentItem() == 0)

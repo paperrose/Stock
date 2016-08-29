@@ -16,6 +16,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.artfonapps.clientrestore.db.Helper;
+import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
 import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
 import com.artfonapps.clientrestore.network.events.pushes.UpdateEvent;
@@ -33,6 +34,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 
@@ -83,16 +85,19 @@ public class GCMIntentService extends IntentService {
             if (jobj.optString("type").equals("new_order")) {
                 showToastNew(jobj.getString("order_id"), description);
             } else if (jobj.optString("type").equals("removed")) {
-                handler.post(new Runnable() {
-                    public void run() {
+                handler.post(() -> {
 
-                        try {
-                            Helper.deleteOrder(Integer.parseInt(jobj.getString("order_id")));
-                            BusProvider.getInstance()
-                                    .post(produceDeleteEvent(Integer.parseInt(jobj.getString("order_id"))));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                    try {
+                        List<Point> pts = Helper.getPointsInOrder(Integer.parseInt(jobj.getString("order_id")));
+                        JSONArray arr = new JSONArray();
+                        for (Point pt : pts) {
+                            arr.put(pt.getJsonDesc());
                         }
+                        Helper.deleteOrder(Integer.parseInt(jobj.getString("order_id")));
+                        BusProvider.getInstance()
+                                .post(produceDeleteEvent(Integer.parseInt(jobj.getString("order_id")), arr));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 });
 
@@ -109,9 +114,9 @@ public class GCMIntentService extends IntentService {
     }
 
     @Produce
-    public LocalDeleteEvent produceDeleteEvent(int orderId)  {
+    public LocalDeleteEvent produceDeleteEvent(int orderId, JSONArray array)  {
 
-        return new LocalDeleteEvent().setCurOrder(orderId).setFromPush(true);
+        return new LocalDeleteEvent().setCurOrder(orderId).setPoints(array).setFromPush(true);
     }
 
     @Produce
@@ -125,83 +130,79 @@ public class GCMIntentService extends IntentService {
     }
 
     public void showToastNew(final String order_id, final String m_desc){
-        handler.post(new Runnable() {
-            public void run() {
+        handler.post(() -> {
 
 
-                if (Helper.getFirstPointInOrder(Integer.parseInt(order_id)) != null) {
-                    return;
-                }
-                try {
-                    BusProvider.getInstance()
-                            .post(produceNewOrderEvent(new JSONObject(m_desc), Integer.parseInt(order_id)));
-                    BusProvider.getInstance()
-                            .post(produceUpdateEvent());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-                ArrayList<AlertPointItem> points2 = new ArrayList<>();
-                String bigTextS = "";
-                try {
-
-                    JSONObject jobj = new JSONObject(m_desc);
-                    JSONArray pts = jobj.getJSONArray("points");
-                    for (int i = 0; i < pts.length(); i++) {
-                        points2.add(new AlertPointItem(pts.getJSONObject(i)));
-                        bigTextS += points2.get(i).getPoint();
-                        bigTextS += System.getProperty("line.separator");
-                        bigTextS += points2.get(i).getAddress();
-                        bigTextS += System.getProperty("line.separator");
-                        bigTextS += points2.get(i).getFormatPlanDatetime();
-                        bigTextS += System.getProperty("line.separator");
-                        bigTextS += System.getProperty("line.separator");
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                Context context = getApplicationContext();
-                Intent notificationIntent = new Intent(context, StartActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("type", "new_order_click");
-                bundle.putString("desc", m_desc);
-                bundle.putString("order_id", order_id);
-                notificationIntent.putExtras(bundle);
-                notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
-                        new Random().nextInt(), notificationIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-                Notification notification = new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.logo)
-                        .setContentTitle("Новый заказ")
-                        .setContentText("Потяните вниз для просмора")
-                        .setStyle(new NotificationCompat.BigTextStyle().bigText(bigTextS))
-                        .setContentIntent(contentIntent)
-                        .build();
-
-                notification.flags = Notification.FLAG_AUTO_CANCEL;
-
-                NotificationManager notificationManager = (NotificationManager) context
-                        .getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.notify(Integer.parseInt(order_id), notification);
-                Uri notification2 = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification2);
-                r.play();
-
+            if (Helper.getFirstPointInOrder(Integer.parseInt(order_id)) != null) {
+                return;
             }
+            try {
+                BusProvider.getInstance()
+                        .post(produceNewOrderEvent(new JSONObject(m_desc), Integer.parseInt(order_id)));
+                BusProvider.getInstance()
+                        .post(produceUpdateEvent());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+            ArrayList<AlertPointItem> points2 = new ArrayList<>();
+            String bigTextS = "";
+            try {
+
+                JSONObject jobj = new JSONObject(m_desc);
+                JSONArray pts = jobj.getJSONArray("points");
+                for (int i = 0; i < pts.length(); i++) {
+                    points2.add(new AlertPointItem(pts.getJSONObject(i)));
+                    bigTextS += points2.get(i).getPoint();
+                    bigTextS += System.getProperty("line.separator");
+                    bigTextS += points2.get(i).getAddress();
+                    bigTextS += System.getProperty("line.separator");
+                    bigTextS += points2.get(i).getFormatPlanDatetime();
+                    bigTextS += System.getProperty("line.separator");
+                    bigTextS += System.getProperty("line.separator");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Context context = getApplicationContext();
+            Intent notificationIntent = new Intent(context, StartActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("type", "new_order_click");
+            bundle.putString("desc", m_desc);
+            bundle.putString("order_id", order_id);
+            notificationIntent.putExtras(bundle);
+            notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
+                    new Random().nextInt(), notificationIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+            Notification notification = new NotificationCompat.Builder(context)
+                    .setSmallIcon(R.drawable.logo)
+                    .setContentTitle("Новый заказ")
+                    .setContentText("Потяните вниз для просмора")
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(bigTextS))
+                    .setContentIntent(contentIntent)
+                    .build();
+
+            notification.flags = Notification.FLAG_AUTO_CANCEL;
+
+            NotificationManager notificationManager = (NotificationManager) context
+                    .getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(Integer.parseInt(order_id), notification);
+            Uri notification2 = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification2);
+            r.play();
+
         });
 
     }
 
 
     public void showToast(){
-        handler.post(new Runnable() {
-            public void run() {
-                Context context = getApplicationContext();
-                Intent intent2 = new Intent("refresh_push_count");
-                LocalBroadcastManager.getInstance(context).sendBroadcast(intent2);
-            }
+        handler.post(() -> {
+            Context context = getApplicationContext();
+            Intent intent2 = new Intent("refresh_push_count");
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent2);
         });
 
     }

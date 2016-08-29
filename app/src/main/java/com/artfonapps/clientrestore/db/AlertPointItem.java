@@ -6,11 +6,13 @@ package com.artfonapps.clientrestore.db;
 import com.artfonapps.clientrestore.BuildConfig;
 import com.artfonapps.clientrestore.constants.Columns;
 import com.artfonapps.clientrestore.constants.JsonFields;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class AlertPointItem {
     private String address;
@@ -46,7 +48,7 @@ public class AlertPointItem {
     }
 
     public AlertPointItem(JSONObject desc) throws JSONException {
-        this.address = desc.getString(JsonFields.NAME).equals(Point.NULL_STR) ? BuildConfig.FLAVOR : desc.getString(Columns.ADDRESS);
+        this.address = desc.getString(JsonFields.NAME).equals(Point.NULL_STR) ? BuildConfig.FLAVOR : desc.optString(Columns.ADDRESS);
         this.address = this.address.substring(this.address.indexOf(58, this.address.indexOf(58) + 1) + 1);
         this.point = desc.getString(JsonFields.NAME).equals(Point.NULL_STR) ? BuildConfig.FLAVOR : desc.getString(JsonFields.NAME);
         this.planDatetime = Long.valueOf(desc.getString(JsonFields.PLAN_ARRIVAL_DATETIME).equals(Point.NULL_STR) ? 0 : desc.getLong(JsonFields.PLAN_ARRIVAL_DATETIME));

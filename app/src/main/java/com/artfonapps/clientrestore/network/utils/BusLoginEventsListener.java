@@ -5,10 +5,12 @@ import android.content.SharedPreferences;
 import android.widget.Toast;
 
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
+import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
 import com.artfonapps.clientrestore.network.events.requests.SendCodeEvent;
 import com.artfonapps.clientrestore.network.events.requests.SendPhoneEvent;
 import com.artfonapps.clientrestore.network.logger.Logger;
 import com.artfonapps.clientrestore.network.requests.Communicator;
+import com.artfonapps.clientrestore.network.requests.CookieStorage;
 import com.artfonapps.clientrestore.views.LoginActivity;
 import com.artfonapps.clientrestore.views.StartActivity;
 import com.squareup.otto.Subscribe;
@@ -32,6 +34,17 @@ public class BusLoginEventsListener {
                 .setContext(activity);
         return this;
     }
+
+    @Subscribe
+    public void onLoginEvent(LoginEvent loginEvent) {
+        if ( CookieStorage.getInstance().getArrayList().get(0).isEmpty()) return;
+        SharedPreferences prefs = login.getSharedPreferences("GCM_prefs", 0);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("COOKIE_STR", CookieStorage.getInstance().getArrayList().get(0));
+        editor.commit();
+
+    }
+
 
     @Override
     public void finalize() throws Throwable {
