@@ -15,6 +15,8 @@ import com.artfonapps.clientrestore.db.Point;
 
 import java.util.List;
 
+import butterknife.ButterKnife;
+
 /**
  * Created by Emil on 15.08.2016.
  */
@@ -62,7 +64,7 @@ public class ListsPagerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         View itemView = layoutInflater.inflate(R.layout.list_layout, container, false);
-        RecyclerView itemsList = (RecyclerView)itemView.findViewById(R.id.items);
+        RecyclerView itemsList = ButterKnife.findById(itemView, R.id.items);
         mLayoutManager = new LinearLayoutManager(context);
 
 

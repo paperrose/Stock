@@ -8,12 +8,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.ToxicBakery.viewpager.transforms.TabletTransformer;
 import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.db.Point;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.ButterKnife;
 
 /**
  * Created by Emil on 15.08.2016.
@@ -62,8 +65,9 @@ public class MainPagerAdapter extends PagerAdapter {
     public Object instantiateItem(ViewGroup container, int position) {
         View itemView = layoutInflater.inflate(ids.get(position), container, false);
         if (ids.get(position) == R.layout.view_pager_inside_test) {
-            hvp = (ViewPager)itemView.findViewById(R.id.hvp);
+            hvp = ButterKnife.findById(itemView, R.id.hvp);
             hvp.setAdapter(listsPagerAdapter);
+            hvp.setPageTransformer(true, new TabletTransformer());
         } else {
             itemView.setVisibility(View.GONE);
         }
