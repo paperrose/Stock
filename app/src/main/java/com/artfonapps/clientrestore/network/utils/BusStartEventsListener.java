@@ -170,11 +170,11 @@ public class BusStartEventsListener {
                 alertList.setAdapter(alertPointAdapter);
                 alertDialog.setView(convertView);
                 alertDialog.setTitle("Заказ №" + String.valueOf(orderId) +" был отменен");
-
                 alertDialog.setPositiveButton("ОК", (dialog, which) -> {
                     currentDialog = null;
                     showAlerts();
                     dialog.dismiss();
+                    logger.log(Methods.canceled, start.generateDefaultContentValues());
                 });
                 AlertDialog alert = alertDialog.create();
                 alert.setCancelable(false);
@@ -186,7 +186,9 @@ public class BusStartEventsListener {
             ContentValues contentValues = new ContentValues();
             contentValues.put(Fields.ID, orderId);
             contentValues.put(Fields.ACCEPTED, 0);
-            logger.log(Methods.remove, start.generateDefaultContentValues());
+            ContentValues logValues = start.generateDefaultContentValues();
+            logValues.put("id_traffic", orderId);
+            logger.log(Methods.remove, logValues);
             communicator.communicate(Methods.remove, contentValues, false);
 
         } catch (Exception e) {
@@ -331,14 +333,13 @@ public class BusStartEventsListener {
                 break;
         }
         currentPoint.save();
+        ContentValues logValues = start.getTrafficContentValues();
+
         start.setCurPoint();
         if (changed) {
             start.incCurrentOperation();
-            logger.log(currentPoint != null ?
-                            Methods.change_point_auto : Methods.end_route,
-                    start.generateDefaultContentValues());
-
-
+            currentPoint = start.getCurrentPoint();
+            logger.log(currentPoint != null ? Methods.change_point_auto : Methods.end_route ,logValues);
         }
 
        // points.clear();

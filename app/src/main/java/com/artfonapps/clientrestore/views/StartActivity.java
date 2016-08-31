@@ -177,7 +177,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         pages.add(createVPPage());
         initElements();
         pages.add(mainPage);
-        mainPagerAdapter = new MainPagerAdapter(appContext, ids, points, orders);
+        mainPagerAdapter = new MainPagerAdapter(appContext, StartActivity.this, ids, points, orders);
         vvp.setAdapter(mainPagerAdapter);
         vvp.setScrollSpeed(0.1f);
         vvp.setCurrentItem(1);
@@ -223,7 +223,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         //       DEBUG = (getIntent().getStringExtra("pass") != null &&
         //               getIntent().getStringExtra("pass").equals("3656834"));
 
-      //  DEBUG = true;
+        DEBUG = true;
         vvp.setVisibility(View.INVISIBLE);
 
 
@@ -277,12 +277,12 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     }
 
 
-    //TODO: перенести в BusStartEventListener
+
     @OnClick(R.id.fab)
     public void clickFab() {
         {
             if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                AlertDialog.Builder builder = new AlertDialog.Builder(CookieStorage.startActivity);
                 contentValues = generateDefaultContentValues();
                 contentValues.put("stage", currentPoint.stage);
                 builder.setTitle("Предупреждение");

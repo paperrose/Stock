@@ -18,6 +18,7 @@ public class Methods {
     public static final String accept = "accept";
     public static final String reject = "reject";
     public static final String remove = "remove";
+    public static final String canceled = "canceled";
     public static final String logout = "logout";
     public static final String refresh = "refresh";
     public static final String send_phone = "send_phone";

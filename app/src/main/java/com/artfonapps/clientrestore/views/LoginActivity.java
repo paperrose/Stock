@@ -213,7 +213,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (tempPhone.length() < 11 && !(tempPhone.startsWith("+7") || tempPhone.startsWith("8")))
                     tempPhone = "+7" + tempPhone;
 
-                if (tempPhone.length() < 11){
+                if (tempPhone.length() < 11 || tempPhone.length() > 13){
                     Toast.makeText(LoginActivity.this, PHONE_NUMBER_LENGHT_ERROR, Toast.LENGTH_LONG).show();
                     return;
                 }
