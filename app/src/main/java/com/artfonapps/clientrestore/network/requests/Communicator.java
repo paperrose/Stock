@@ -6,7 +6,6 @@ import android.util.Log;
 import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
 import com.artfonapps.clientrestore.network.events.local.LogEvent;
-import com.artfonapps.clientrestore.network.events.local.LogoutEvent;
 import com.artfonapps.clientrestore.network.events.requests.AcceptEvent;
 import com.artfonapps.clientrestore.network.events.requests.ClickEvent;
 import com.artfonapps.clientrestore.network.events.requests.DeleteEvent;
@@ -37,8 +36,8 @@ import retrofit2.Retrofit;
  */
 public class Communicator {
     private static final String TAG = "CommunicatorStock";
-    public static String debugDomainName = "http://192.168.0.143:8080/";
-//    public static String debugDomainName = "http://95.213.191.92:8098/";
+//    public static String debugDomainName = "http://192.168.0.122:8080/";
+    public static String debugDomainName = "http://95.213.191.92:8098/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
 

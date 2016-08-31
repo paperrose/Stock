@@ -3,7 +3,6 @@ package com.artfonapps.clientrestore.views.adapters;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.Spanned;
@@ -19,6 +18,7 @@ import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
+import com.artfonapps.clientrestore.network.requests.CookieStorage;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
 import com.artfonapps.clientrestore.views.StartActivity;
 import com.squareup.otto.Produce;
@@ -98,7 +98,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
         holder.removeOrder.setTag(position);
         holder.backLayout.setBackgroundResource(p.isCurrentOrder() ? R.drawable.order_item_drawable : R.color.reStore_pink_light);
         holder.removeOrder.setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            AlertDialog.Builder builder = new AlertDialog.Builder(CookieStorage.startActivity); //  Уладить конфликты с context
             builder.setTitle("Предупреждение")
                     .setMessage("Удалить заказ?")
                     .setNegativeButton("Нет",
@@ -107,7 +107,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
                             })
                     .setPositiveButton("Да",
                             (dialog, id) -> {
-                                if (mContext instanceof StartActivity) {
+                                if (CookieStorage.startActivity instanceof StartActivity) {
                                     BusProvider.getInstance()
                                             .post(produceDeleteEvent(orders.get((Integer)v.getTag())));
                                 }

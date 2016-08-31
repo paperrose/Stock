@@ -27,7 +27,6 @@ import android.widget.TextView;
 import com.activeandroid.query.Delete;
 import com.artfonapps.clientrestore.JSONParser;
 import com.artfonapps.clientrestore.R;
-import com.artfonapps.clientrestore.StockApplication;
 import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Order;
@@ -42,8 +41,6 @@ import com.artfonapps.clientrestore.network.utils.BusStartEventsListener;
 import com.artfonapps.clientrestore.views.adapters.MainPagerAdapter;
 import com.artfonapps.clientrestore.views.utils.VerticalViewPager;
 import com.dd.CircularProgressButton;
-import static com.artfonapps.clientrestore.StockApplication.getContext;
-import static com.artfonapps.clientrestore.StockApplication.getPrefs;
 import com.squareup.otto.Produce;
 
 import org.json.JSONArray;
@@ -56,6 +53,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import static com.artfonapps.clientrestore.StockApplication.getContext;
+import static com.artfonapps.clientrestore.StockApplication.getPrefs;
 
 /**
  * Created by Emil on 11.08.2016.
@@ -282,10 +282,9 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     public void clickFab() {
         {
             if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 contentValues = generateDefaultContentValues();
                 contentValues.put("stage", currentPoint.stage);
-                logger.log(Methods.location_error, contentValues);
                 builder.setTitle("Предупреждение");
                 builder.setMessage("Вы слишком далеко от места назначения. Ваши координаты: " +
                         currentLocation.getLatitude() + ":" + currentLocation.getLongitude() + ". Место находится тут: " +
@@ -293,15 +292,16 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                 builder.setNeutralButton("ОК", (dialog, which) -> {
                     dialog.dismiss();
                 });
+                logger.log(Methods.location_error, contentValues);
+
                 AlertDialog alert = builder.create();
                 alert.show();
                 return;
             }
             if ((System.currentTimeMillis() - lastClick) / 1000 < 300) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
+                AlertDialog.Builder builder = new AlertDialog.Builder(CookieStorage.startActivity);
                 contentValues = generateDefaultContentValues();
                 contentValues.put("stage", currentPoint.stage);
-                logger.log(Methods.time_warning, contentValues);
                 // (new LogTask()).execute(Methods.time_warning, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
                 builder.setTitle("Предупреждение");
                 builder.setMessage("Предыдущее действие было выполнено менее чем 5 минут назад. Вы уверены, что хотите продолжить?");
@@ -309,6 +309,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                 builder.setPositiveButton("Да", (dialog, which) -> {
                     onSuccessClick(currentPoint);
                     dialog.dismiss();
+                    logger.log(Methods.time_warning, contentValues);
                 });
 
                 builder.setNegativeButton("Нет", (dialog, which) -> {
@@ -317,8 +318,12 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                 AlertDialog alert = builder.create();
                 alert.show();
             } else {
-                if (currentPoint != null)
+                if (currentPoint != null){
+                    contentValues = generateDefaultContentValues();
+                    contentValues.put("stage", currentPoint.stage);
                     onSuccessClick(currentPoint);
+                    logger.log(Methods.click_point, contentValues);
+                }
             }
         }
     }
