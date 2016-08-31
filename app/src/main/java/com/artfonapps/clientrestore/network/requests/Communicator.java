@@ -37,7 +37,8 @@ import retrofit2.Retrofit;
  */
 public class Communicator {
     private static final String TAG = "CommunicatorStock";
-    public static String debugDomainName = "http://95.213.191.92:8098/";
+    public static String debugDomainName = "http://192.168.0.143:8080/";
+//    public static String debugDomainName = "http://95.213.191.92:8098/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
 
@@ -101,10 +102,7 @@ public class Communicator {
         return new LoginEvent(body);
     }
 
-    @Produce
-    public LogoutEvent produceLogoutEvent(ResponseBody body) throws IOException, JSONException {
-        return new LogoutEvent(body);
-    }
+
 
     @Produce
     public AcceptEvent produceAcceptEvent(ResponseBody body) throws IOException, JSONException {

@@ -12,7 +12,7 @@ import okhttp3.ResponseBody;
  * Created by Emil on 10.08.2016.
  */
 public class LogoutEvent extends BaseEvent {
-    public LogoutEvent(ResponseBody responseBody) throws IOException, JSONException {
-        super(responseBody);
+    public LogoutEvent() {
+        super();
     }
 }

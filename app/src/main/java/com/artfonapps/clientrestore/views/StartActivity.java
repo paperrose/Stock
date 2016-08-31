@@ -3,6 +3,7 @@ package com.artfonapps.clientrestore.views;
 
 import android.Manifest;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 import com.activeandroid.query.Delete;
 import com.artfonapps.clientrestore.JSONParser;
 import com.artfonapps.clientrestore.R;
+import com.artfonapps.clientrestore.StockApplication;
 import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Order;
@@ -40,6 +42,8 @@ import com.artfonapps.clientrestore.network.utils.BusStartEventsListener;
 import com.artfonapps.clientrestore.views.adapters.MainPagerAdapter;
 import com.artfonapps.clientrestore.views.utils.VerticalViewPager;
 import com.dd.CircularProgressButton;
+import static com.artfonapps.clientrestore.StockApplication.getContext;
+import static com.artfonapps.clientrestore.StockApplication.getPrefs;
 import com.squareup.otto.Produce;
 
 import org.json.JSONArray;
@@ -132,6 +136,8 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         this.currentOperation++;
     }
 
+    SharedPreferences prefs;
+    Context appContext;
 
     Point currentPoint;
     Order currentOrder;
@@ -153,10 +159,10 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_new);
+        prefs = getPrefs();
+        appContext = getContext();
         initSettings();
         initUtils();
-        CookieStorage.startActivity = StartActivity.this;
-        SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
         CookieStorage.getInstance().getArrayList().add(0, prefs.getString("COOKIE_STR", ""));
         eventsBus = BusStartEventsListener.INSTANCE.setActivity(this);
         try {
@@ -171,7 +177,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         pages.add(createVPPage());
         initElements();
         pages.add(mainPage);
-        mainPagerAdapter = new MainPagerAdapter(StartActivity.this, ids, points, orders);
+        mainPagerAdapter = new MainPagerAdapter(appContext, ids, points, orders);
         vvp.setAdapter(mainPagerAdapter);
         vvp.setScrollSpeed(0.1f);
         vvp.setCurrentItem(1);
@@ -206,7 +212,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
             loginValues.put(Fields.LOGIN, "admin");
             loginValues.put(Fields.PASSWORD, "123456");
             communicator.communicate(Methods.login, loginValues, false);*/
-            Intent intent = new Intent(StartActivity.this, LoginActivity.class);
+            Intent intent = new Intent(appContext, LoginActivity.class);
             startActivity(intent);
             finish();
         } else {
@@ -238,7 +244,6 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
 
     private void initSettings() {
-        SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
         getIntent().putExtra("pass", prefs.getString("PASS_CODE", ""));
         JSONParser.domainName = prefs.getString("CUR_SERVER", JSONParser.productionDomainName);
         if (getIntent().getStringExtra("pass") != null &&
@@ -254,9 +259,9 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         communicator = Communicator.INSTANCE;
         logger = new Logger()
                 .setCommunicator(communicator)
-                .setContext(StartActivity.this);
+                .setContext(appContext);
         CookieStorage.startActivity = StartActivity.this;
-        inflater = LayoutInflater.from(StartActivity.this);
+        inflater = LayoutInflater.from(appContext);
     }
 
     private void initElements() {
@@ -277,7 +282,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     public void clickFab() {
         {
             if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(StartActivity.this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
                 contentValues = generateDefaultContentValues();
                 contentValues.put("stage", currentPoint.stage);
                 logger.log(Methods.location_error, contentValues);
@@ -293,7 +298,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                 return;
             }
             if ((System.currentTimeMillis() - lastClick) / 1000 < 300) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(StartActivity.this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
                 contentValues = generateDefaultContentValues();
                 contentValues.put("stage", currentPoint.stage);
                 logger.log(Methods.time_warning, contentValues);
@@ -399,8 +404,6 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         int id = item.getItemId();
         if (id == R.id.nav_push) {
             ContentValues cv = new ContentValues();
-            SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
-
             cv.put(Fields.DEVICE_ID, prefs.getString("PROPERTY_REG_ID", ""));
             communicator.communicate(Methods.debug_push, cv, false);
         }
@@ -466,8 +469,6 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
     public void logout(){
 
-        SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
-
         ContentValues contentValues = new ContentValues();
         contentValues.put(Fields.PHONE_NUMBER, phoneNumber );
         contentValues.put(Fields.DEVICEID, prefs.getString("PROPERTY_REG_ID",  ""));
@@ -480,7 +481,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         editor.putString("CUR_SERVER", JSONParser.debugDomainName);
 
 
-        Intent intent = new Intent(StartActivity.this, LoginActivity.class);
+        Intent intent = new Intent(appContext, LoginActivity.class);
         startActivity(intent);
         new Delete().from(Point.class).execute();
         finish();
@@ -526,7 +527,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     @OnClick(R.id.callPoint)
     public void callPoint() {
         Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + currentPoint.getContact()));
-        if (ActivityCompat.checkSelfPermission(StartActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(appContext, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         startActivity(intent);

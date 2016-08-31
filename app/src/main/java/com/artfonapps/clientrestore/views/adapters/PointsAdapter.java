@@ -29,16 +29,18 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder> {
+    public static final String DOWNLOAD = "Загрузка";
+    public static final String UPLOAD = "Выгрузка";
 
     //TODO change with recyclerView!!!
 
-    AppCompatActivity context;
+    Context context;
     private List<Point> items;
     LayoutInflater inflater;
     public PointsAdapter(Context context, List<Point> objects) {
-        this.context = (AppCompatActivity)context;
-        this.items = new ArrayList<>();
-        this.items.addAll(objects);
+        this.context = context;
+        this.items = objects;
+       // this.items.addAll(objects);
         inflater = LayoutInflater.from(context);
     }
 
@@ -58,7 +60,7 @@ public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder
     public void onBindViewHolder(ViewHolder holder, int position) {
         Point p = items.get(position);
         holder.point.setText(p.getPoint());
-        holder.type.setText((p.getType() == 1) ? "Загрузка" : "Выгрузка");
+        holder.type.setText((p.getType() == 1) ?  DOWNLOAD : UPLOAD);
         holder.datetime.setText(p.getFormatPlanDatetime());
         holder.address.setText(p.getAddress());
         holder.doc.setText(p.getDoc());

@@ -35,13 +35,13 @@ import butterknife.ButterKnife;
 public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder> {
 
     public List<Order> orders;
-    public AppCompatActivity mContext;
+    public Context mContext;
     private static final StrikethroughSpan STRIKE_THROUGH_SPAN = new StrikethroughSpan();
     LayoutInflater inflater;
     //TODO change with recyclerView
 
     public OrdersAdapter(Context context, List<Order> orders) {
-        mContext = (AppCompatActivity)context;
+        mContext = context;
         this.orders = new ArrayList<>();
         this.orders.addAll(orders);
         inflater = LayoutInflater.from(context);

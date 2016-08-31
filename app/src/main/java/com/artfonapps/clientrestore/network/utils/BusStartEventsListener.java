@@ -18,6 +18,7 @@ import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
 import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
+import com.artfonapps.clientrestore.network.events.local.LogoutEvent;
 import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
 import com.artfonapps.clientrestore.network.events.pushes.UpdateEvent;
 import com.artfonapps.clientrestore.network.events.requests.ClickEvent;
@@ -84,6 +85,11 @@ public class BusStartEventsListener {
 
         Toast.makeText(start, "Ошибка соединения с сервером", Toast.LENGTH_LONG).show();
         (start.findViewById(R.id.endLayout)).setVisibility(View.VISIBLE);
+    }
+
+    @Subscribe
+    public void onLogoutEvent(LogoutEvent event) {
+        start.logout();
     }
 
 

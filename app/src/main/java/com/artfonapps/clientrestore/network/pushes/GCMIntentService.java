@@ -18,6 +18,7 @@ import android.util.Log;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
+import com.artfonapps.clientrestore.network.events.local.LogoutEvent;
 import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
 import com.artfonapps.clientrestore.network.events.pushes.UpdateEvent;
 import com.artfonapps.clientrestore.R;
@@ -32,10 +33,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+
+import okhttp3.ResponseBody;
 
 
 public class GCMIntentService extends IntentService {
@@ -81,29 +85,40 @@ public class GCMIntentService extends IntentService {
         final JSONObject jobj;
         try {
             jobj = new JSONObject(description);
+            String type = jobj.optString("type");
             Log.e("Push", description);
-            if (jobj.optString("type").equals("new_order")) {
-                showToastNew(jobj.getString("order_id"), description);
-            } else if (jobj.optString("type").equals("removed")) {
-                handler.post(() -> {
+            switch (type) {
+                case "new_order":
+                    showToastNew(jobj.getString("order_id"), description);
+                    break;
+                case "removed":
+                    handler.post(() -> {
 
-                    try {
-                        List<Point> pts = Helper.getPointsInOrder(Integer.parseInt(jobj.getString("order_id")));
-                        JSONArray arr = new JSONArray();
-                        for (Point pt : pts) {
-                            arr.put(pt.getJsonDesc());
+                        try {
+                            List<Point> pts = Helper.getPointsInOrder(Integer.parseInt(jobj.getString("order_id")));
+                            JSONArray arr = new JSONArray();
+                            for (Point pt : pts) {
+                                arr.put(pt.getJsonDesc());
+                            }
+                            BusProvider.getInstance()
+                                    .post(produceDeleteEvent(Integer.parseInt(jobj.getString("order_id")), arr));
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
+                    });
+                    break;
+                case "logout":
+                    handler.post(() -> {
                         BusProvider.getInstance()
-                                .post(produceDeleteEvent(Integer.parseInt(jobj.getString("order_id")), arr));
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-            } else {
-                showToast();
+                                .post(produceLogoutEvent());
+                    });
+                    break;
+                default:
+                    showToast();
+                    break;
             }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -111,6 +126,11 @@ public class GCMIntentService extends IntentService {
 
         GCMBroadcastReceiver.completeWakefulIntent(intent);
 
+    }
+
+    @Produce
+    public LogoutEvent produceLogoutEvent() {
+        return new LogoutEvent();
     }
 
     @Produce
