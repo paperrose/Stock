@@ -1,5 +1,6 @@
 package com.artfonapps.clientrestore.views.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,6 +26,8 @@ public class ListsPagerAdapter extends PagerAdapter {
     LayoutInflater layoutInflater;
     PointsAdapter pointsAdapter;
     OrdersAdapter ordersAdapter;
+    Activity activity;
+
     private LinearLayoutManager mLayoutManager;
 
     public ListsPagerAdapter setPoints(List<Point> points) {
@@ -43,11 +46,12 @@ public class ListsPagerAdapter extends PagerAdapter {
 
     List<Integer> ids;
 
-    public ListsPagerAdapter(Context context, List<Integer> ids, List<Point> points, List<Order> orders) {
+    public ListsPagerAdapter(Context context, Activity activity, List<Integer> ids, List<Point> points, List<Order> orders) {
         this.context = context;
+        this.activity = activity;
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        pointsAdapter = new PointsAdapter(context, points);
-        ordersAdapter = new OrdersAdapter(context, orders);
+        pointsAdapter = new PointsAdapter(context, activity, points);
+        ordersAdapter = new OrdersAdapter(context, activity, orders);
         this.ids = ids;
     }
 

@@ -1,5 +1,6 @@
 package com.artfonapps.clientrestore.views.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.support.v7.app.AlertDialog;
@@ -38,10 +39,12 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
     public Context mContext;
     private static final StrikethroughSpan STRIKE_THROUGH_SPAN = new StrikethroughSpan();
     LayoutInflater inflater;
+    Activity activity;
     //TODO change with recyclerView
 
-    public OrdersAdapter(Context context, List<Order> orders) {
+    public OrdersAdapter(Context context, Activity activity, List<Order> orders) {
         mContext = context;
+        this.activity = activity;
         this.orders = new ArrayList<>();
         this.orders.addAll(orders);
         inflater = LayoutInflater.from(context);
@@ -107,7 +110,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
                             })
                     .setPositiveButton("Да",
                             (dialog, id) -> {
-                                if (CookieStorage.startActivity instanceof StartActivity) {
+                                if (activity instanceof StartActivity) {
                                     BusProvider.getInstance()
                                             .post(produceDeleteEvent(orders.get((Integer)v.getTag())));
                                 }

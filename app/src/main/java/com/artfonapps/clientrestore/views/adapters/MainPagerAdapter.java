@@ -1,5 +1,6 @@
 package com.artfonapps.clientrestore.views.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -24,20 +25,22 @@ import butterknife.ButterKnife;
 public class MainPagerAdapter extends PagerAdapter {
 
     Context context;
+    Activity activity;
     LayoutInflater layoutInflater;
     List<Integer> ids;
     public ViewPager hvp;
 
     ListsPagerAdapter listsPagerAdapter;
 
-    public MainPagerAdapter(Context context, List<Integer> ids, List<Point> points, List<Order> orders) {
+    public MainPagerAdapter(Context context, Activity activity, List<Integer> ids, List<Point> points, List<Order> orders) {
         this.context = context;
+        this.activity = activity;
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.ids = ids;
         List<Integer> ids2 = new ArrayList<>();
         ids2.add(R.layout.point_item);
         ids2.add(R.layout.order_item);
-        listsPagerAdapter = new ListsPagerAdapter(context, ids2, points, orders);
+        listsPagerAdapter = new ListsPagerAdapter(context, activity, ids2, points, orders);
     }
 
     public MainPagerAdapter setPoints(List<Point> points) {

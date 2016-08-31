@@ -177,7 +177,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         pages.add(createVPPage());
         initElements();
         pages.add(mainPage);
-        mainPagerAdapter = new MainPagerAdapter(appContext, ids, points, orders);
+        mainPagerAdapter = new MainPagerAdapter(appContext, StartActivity.this, ids, points, orders);
         vvp.setAdapter(mainPagerAdapter);
         vvp.setScrollSpeed(0.1f);
         vvp.setCurrentItem(1);
