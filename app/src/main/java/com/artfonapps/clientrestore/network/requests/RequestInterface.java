@@ -7,7 +7,6 @@ import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Header;
-import retrofit2.http.Headers;
 import retrofit2.http.POST;
 
 /**
@@ -27,6 +26,12 @@ public interface RequestInterface {
                                @Field(Fields.DEVICE_ID) String device_id,
                                @Field(Fields.CODE) String code);
 
+
+    @FormUrlEncoded
+    @POST("api/auto/mobile/logout")
+    Call<ResponseBody> logout(@Header("Cookie") String cookie,
+                               @Field(Fields.PHONE_NUMBER) String phoneNumber,
+                               @Field(Fields.DEVICEID) String deviceId);
 
 
     @FormUrlEncoded

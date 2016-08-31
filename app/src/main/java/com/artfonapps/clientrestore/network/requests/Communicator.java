@@ -171,6 +171,9 @@ public class Communicator {
                 case Methods.remove:
                     accept(Methods.remove, vars);
                     break;
+                case Methods.logout:
+                    logout(Methods.logout, vars);
+                    break;
                 default:
                     break;
             }
@@ -320,6 +323,16 @@ public class Communicator {
                 values.getAsString(Fields.MOBILE),
                 values.getAsString(Fields.DEVICE_ID),
                 values.getAsString(Fields.CODE)
+        );
+        response.enqueue(commonCommunicate(method));
+    }
+
+    public void logout(String method, ContentValues values){
+        RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
+        Call<ResponseBody> response = communicatorInterface.logout(
+                getCurrentCookies(),
+                values.getAsString(Fields.PHONE_NUMBER),
+                values.getAsString(Fields.DEVICEID)
         );
         response.enqueue(commonCommunicate(method));
     }

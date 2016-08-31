@@ -3,6 +3,7 @@ package com.artfonapps.clientrestore.constants;
 /**
  * Created by Emil on 10.08.2016.
  */
+//Привести названия на бэкенде и в МП к одному виду
 public class Fields {
     public static final String TYPE = "type";
     public static final String DEVICE_ID = "device_id";
@@ -18,6 +19,6 @@ public class Fields {
     public static final String CURRENT_JSON = "currentJson";
     public static final String TRAFFIC_ID = "trafficId";
     public static final String CURRENT_OPERATION = "currentOperation";
-
+    public static final String DEVICEID = "deviceId";   //Есть один метод который ловит именно deviceId
     public static final String LOG_METHOD = "logMethod";
 }

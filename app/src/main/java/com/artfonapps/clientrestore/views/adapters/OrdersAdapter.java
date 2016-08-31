@@ -70,6 +70,14 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
     public void onBindViewHolder(final OrdersAdapter.ViewHolder holder, int position) {
         Order p = orders.get(position);
         holder.card.removeAllViews();
+
+        //Фу так делать
+        TextView orderId = new TextView(mContext);
+        orderId.setText("Заказ №" + p.getIdListTraffic());
+        orderId.setTextColor(mContext.getResources().getColor(R.color.cpb_white));
+        orderId.setTypeface(null, Typeface.BOLD);
+        holder.card.addView(orderId);
+
         for (Point point : p.points) {
             TextView tv = new TextView(mContext);
             tv.setTextColor(mContext.getResources().getColor(R.color.cpb_white));

@@ -86,6 +86,7 @@ public class LoginActivity extends AppCompatActivity {
     Communicator communicator;
     public static final String ENTER_SMS_CODE = "Введите проверочный код из СМС и нажмите далее";
     public static final String NEED_PHONE_NUMBER = "Необходимо ввести номер телефона";
+    public static final String PHONE_NUMBER_LENGHT_ERROR = "Неверный формат для номера телефона";
     public static final String SERVER_ERROR = "Ошибка соединения с сервером";
     public static final String INTERNET_ERROR = "Ошибка подключения к интернету";
     BusLoginEventsListener eventsBus;
@@ -209,6 +210,14 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this, NEED_PHONE_NUMBER, Toast.LENGTH_LONG).show();
                     return;
                 }
+                if (tempPhone.length() < 11 && !(tempPhone.startsWith("+7") || tempPhone.startsWith("8")))
+                    tempPhone = "+7" + tempPhone;
+
+                if (tempPhone.length() < 11){
+                    Toast.makeText(LoginActivity.this, PHONE_NUMBER_LENGHT_ERROR, Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 sendPhoneSuccess();
             } else {
                 sendCodeSuccess();

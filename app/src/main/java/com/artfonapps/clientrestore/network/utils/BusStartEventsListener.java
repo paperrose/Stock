@@ -163,7 +163,7 @@ public class BusStartEventsListener {
                 AlertPointAdapter alertPointAdapter = new AlertPointAdapter(CookieStorage.startActivity, R.layout.alert_point_item, points2);
                 alertList.setAdapter(alertPointAdapter);
                 alertDialog.setView(convertView);
-                alertDialog.setTitle("Заказ был удален");
+                alertDialog.setTitle("Заказ №" + String.valueOf(orderId) +" был отменен");
 
                 alertDialog.setPositiveButton("ОК", (dialog, which) -> {
                     currentDialog = null;
@@ -213,8 +213,6 @@ public class BusStartEventsListener {
     @Subscribe
     public void onNewOrderEvent(NewOrderEvent newOrderEvent) {
 
-
-
         try {
 
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(CookieStorage.startActivity);
@@ -235,7 +233,7 @@ public class BusStartEventsListener {
             AlertPointAdapter alertPointAdapter = new AlertPointAdapter(CookieStorage.startActivity, R.layout.alert_point_item, points2);
             alertList.setAdapter(alertPointAdapter);
             alertDialog.setView(convertView);
-            alertDialog.setTitle("Новый заказ");
+            alertDialog.setTitle("Новый заказ №" +  String.valueOf(order_id));
 
             final ContentValues contentValues = start.generateDefaultContentValues();
             contentValues.put("id_traffic", order_id);

@@ -271,6 +271,8 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
        // fab.setOnClickListener(view -> );
     }
 
+
+    //TODO: перенести в BusStartEventListener
     @OnClick(R.id.fab)
     public void clickFab() {
         {
@@ -454,22 +456,35 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
         if (id == R.id.action_logout) {
             // (new LogTask()).execute(Methods.refresh);
-            SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("PROPERTY_MOBILE", "");
-            editor.putString("PASS_CODE", "");
-            editor.putString("PROPERTY_REG_ID", "");
-            editor.putString("CUR_SERVER", JSONParser.debugDomainName);
-            editor.commit();
-            Intent intent = new Intent(StartActivity.this, LoginActivity.class);
-            startActivity(intent);
-            new Delete().from(Point.class).execute();
-            finish();
+            logout();
             return true;
-
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public void logout(){
+
+        SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(Fields.PHONE_NUMBER, phoneNumber );
+        contentValues.put(Fields.DEVICEID, prefs.getString("PROPERTY_REG_ID",  ""));
+        communicator.communicate(Methods.logout, contentValues, false);
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("PROPERTY_MOBILE", "");
+        editor.putString("PASS_CODE", "");
+        editor.putString("PROPERTY_REG_ID", "");
+        editor.putString("CUR_SERVER", JSONParser.debugDomainName);
+
+
+        Intent intent = new Intent(StartActivity.this, LoginActivity.class);
+        startActivity(intent);
+        new Delete().from(Point.class).execute();
+        finish();
+
     }
 
     //TODO: можно чистить точки с разницей в 5 дней.
