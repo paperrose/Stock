@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.db.Helper;
@@ -72,7 +73,9 @@ public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder
         holder.itemPanel.setTag(position);
         holder.call.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + items.get((Integer)v.getTag()).getContact()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(activity, "У приложения нет разрешения на звонки",  Toast.LENGTH_LONG);
                 return;
             }
             context.startActivity(intent);

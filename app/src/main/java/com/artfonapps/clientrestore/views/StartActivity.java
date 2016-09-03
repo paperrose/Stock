@@ -31,6 +31,7 @@ import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.db.Point;
+import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
 import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
 import com.artfonapps.clientrestore.network.logger.Logger;
 import com.artfonapps.clientrestore.network.logger.Methods;
@@ -66,6 +67,17 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
     MainPagerAdapter mainPagerAdapter;
     boolean DEBUG;
+
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        isVisible = visible;
+    }
+
+    private boolean isVisible;
     long lastClick = 0;
 
     @BindView(R.id.vvp)
@@ -229,7 +241,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
+        this.setVisible(true);
 
     }
 
@@ -266,21 +278,16 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
     private void initElements() {
         mainPage = createMainPage();
-      /*  clientName = (TextView) findViewById(R.id.taskClient);
-        doc = (TextView) findViewById(R.id.taskDocument);
-        address = (TextView) findViewById(R.id.taskAddress);
-        point_name = (TextView) findViewById(R.id.point);
-        pointCall = (ImageButton) findViewById(R.id.callPoint);
-        arrivalTime = (TextView) findViewById(R.id.taskDescription);
-        fab = (CircularProgressButton) findViewById(R.id.fab);*/
-       // fab.setOnClickListener(view -> );
     }
-
 
 
     @OnClick(R.id.fab)
     public void clickFab() {
         {
+            if (currentPoint == null){
+                return;
+            }
+
             if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(CookieStorage.startActivity);
                 contentValues = generateDefaultContentValues();
@@ -478,13 +485,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         contentValues.put(Fields.PHONE_NUMBER, phoneNumber );
         contentValues.put(Fields.DEVICEID, prefs.getString("PROPERTY_REG_ID",  ""));
         communicator.communicate(Methods.logout, contentValues, false);
-
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("PROPERTY_MOBILE", "");
-        editor.putString("PASS_CODE", "");
-        editor.putString("PROPERTY_REG_ID", "");
-        editor.putString("CUR_SERVER", JSONParser.debugDomainName);
-
+        prefs.edit().clear().commit();
 
         Intent intent = new Intent(appContext, LoginActivity.class);
         startActivity(intent);
@@ -591,10 +592,28 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         }
     }
 
+    @Produce
+    public LocalDeleteEvent produceLocalDeleteEvent() {
+        try {
+            if (getIntent().getStringExtra("type") != null &&
+                    getIntent().getStringExtra("type").equals("removed")) {
+                getIntent().putExtra("type", "");
+                return new LocalDeleteEvent()
+                        .setFromPush(true)
+                        .setCurOrder(Integer.parseInt(getIntent().getStringExtra("order_id")));
+            } else return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         BusProvider.getInstance().register(this);
+        this.setVisible(true);
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -612,6 +631,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     public void onPause() {
         super.onPause();
         BusProvider.getInstance().unregister(this);
+        this.setVisible(false);
     }
 
 

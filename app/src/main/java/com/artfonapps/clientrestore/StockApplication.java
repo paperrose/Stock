@@ -6,10 +6,12 @@ import android.content.SharedPreferences;
 /**
  * Created by Emil on 31.08.2016.
  */
-public class StockApplication extends com.activeandroid.app.Application {
+public class StockApplication extends com.activeandroid.app.Application{
     private static final String GCM_PREFS = "GCM_prefs";
     private static Context appContext;
     private static SharedPreferences prefs;
+
+    public final static int APPLICATION_CALL_PERMISSION_REQUEST = 0;
 
     @Override
     public void onCreate() {
@@ -25,4 +27,6 @@ public class StockApplication extends com.activeandroid.app.Application {
     public static SharedPreferences getPrefs() {
         return prefs;
     }
+
+
 }

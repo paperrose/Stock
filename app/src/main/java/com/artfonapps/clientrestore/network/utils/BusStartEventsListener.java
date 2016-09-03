@@ -55,13 +55,16 @@ public class BusStartEventsListener {
     }
 
     public void showAlerts() {
-        if (alerts.peek() != null && currentDialog == null) {
+
+        if (!start.isVisible()){
+            return;
+        }
+        if (alerts.peek() != null && currentDialog == null ) {
             currentDialog = alerts.poll();
             if (alerts.size() > 0)
                 currentDialog.setTitle(String.format("Новый заказ (в очереди %s)", alerts.size()));
             currentDialog.show();
         }
-
     }
 
     public BusStartEventsListener setActivity(StartActivity activity) {
@@ -127,6 +130,11 @@ public class BusStartEventsListener {
     @Subscribe
     public void onLocalDeleteEvent(LocalDeleteEvent localDeleteEvent) {
 
+        if (!start.isVisible()){
+            return;
+        }
+
+
         //Переписать на int contain
         int orderId = localDeleteEvent.getCurOrder();
         ArrayList<Point> points = new ArrayList<>();
@@ -148,10 +156,14 @@ public class BusStartEventsListener {
             Helper.deleteOrder(orderId);
             start.setCurPoint();
             start.refresh();
+
+            ContentValues logValues = start.generateDefaultContentValues();
+            logValues.put("id_traffic", orderId);
+
             if (localDeleteEvent.isFromPush()) {
 
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(CookieStorage.startActivity);
-                LayoutInflater inflater = LayoutInflater.from(CookieStorage.startActivity);
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(start);
+                LayoutInflater inflater = LayoutInflater.from(start);
                 View convertView = inflater.inflate(R.layout.alert_layout, null);
                 ListView alertList = (ListView) convertView.findViewById(R.id.alertList);
                 ArrayList<AlertPointItem> points2 = new ArrayList<>();
@@ -174,7 +186,7 @@ public class BusStartEventsListener {
                     currentDialog = null;
                     showAlerts();
                     dialog.dismiss();
-                    logger.log(Methods.canceled, start.generateDefaultContentValues());
+                    logger.log(Methods.canceled,  logValues);
                 });
                 AlertDialog alert = alertDialog.create();
                 alert.setCancelable(false);
@@ -186,8 +198,7 @@ public class BusStartEventsListener {
             ContentValues contentValues = new ContentValues();
             contentValues.put(Fields.ID, orderId);
             contentValues.put(Fields.ACCEPTED, 0);
-            ContentValues logValues = start.generateDefaultContentValues();
-            logValues.put("id_traffic", orderId);
+
             logger.log(Methods.remove, logValues);
             communicator.communicate(Methods.remove, contentValues, false);
 
@@ -220,11 +231,14 @@ public class BusStartEventsListener {
 
     @Subscribe
     public void onNewOrderEvent(NewOrderEvent newOrderEvent) {
+        if (!start.isVisible()){
+            return;
+        }
 
         try {
 
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(CookieStorage.startActivity);
-            LayoutInflater inflater = LayoutInflater.from(CookieStorage.startActivity);
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(start);
+            LayoutInflater inflater = LayoutInflater.from(start);
             View convertView = inflater.inflate(R.layout.alert_layout, null);
             final int order_id = newOrderEvent.getCurOrder();
             ListView alertList = (ListView) convertView.findViewById(R.id.alertList);
