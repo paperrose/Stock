@@ -64,19 +64,22 @@ public class GCMIntentService extends IntentService {
     }
     @Override
     protected void onHandleIntent(Intent intent) {
-        Bundle extras = intent.getExtras();
-        //GoogleCloudMessaging.getInstance(this);
-        Log.e("push_msg", extras.getString("description"));
-        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
-        String messageType = gcm.getMessageType(intent);
 
+        //Пересмотреть обработчик
         try {
+
+            Bundle extras = intent.getExtras();
+            GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+            String messageType = gcm.getMessageType(intent);
+
             description = extras.getString("description");
             if (description == null) {
                 description = extras.getString("data");
             }
         } catch (Exception e) {
-            description = extras.getString("data");
+            //description = extras.getString("data");
+            Log.e("Intent", "Handle non expected intent", e);
+            return;
         }
         final JSONObject jobj;
         try {
@@ -101,8 +104,10 @@ public class GCMIntentService extends IntentService {
                     break;
             }
 
-        } catch (JSONException e) {
+        } catch (JSONException e) {  //Сюда выпадает в случае если нет сообщения в Intent'е, а так как интент хендлер еще и другие броадкасты кроме gcm получет выпадает здесь с nullPointer
             e.printStackTrace();
+        } catch (NullPointerException e){
+            Log.w("Intent", "Empty message in handled Intent", e);
         }
 
 

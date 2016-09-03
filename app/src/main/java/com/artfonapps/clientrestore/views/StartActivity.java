@@ -610,20 +610,24 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
     @Override
     public void onResume() {
-        super.onResume();
-        BusProvider.getInstance().register(this);
-        this.setVisible(true);
+        try {
+            super.onResume();
+            BusProvider.getInstance().register(this);
+            this.setVisible(true);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    1000 * 10, 10, locationListener);
+            locationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER, 1000 * 10, 10,
+                    locationListener);
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                1000 * 10, 10, locationListener);
-        locationManager.requestLocationUpdates(
-                LocationManager.NETWORK_PROVIDER, 1000 * 10, 10,
-                locationListener);
-
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 
@@ -631,6 +635,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     public void onPause() {
         super.onPause();
         BusProvider.getInstance().unregister(this);
+
         this.setVisible(false);
     }
 
