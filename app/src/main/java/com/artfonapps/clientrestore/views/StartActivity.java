@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,6 +34,9 @@ import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
 import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
 import com.artfonapps.clientrestore.network.logger.Logger;
 import com.artfonapps.clientrestore.network.logger.Methods;
+import com.artfonapps.clientrestore.network.notifications.LocationErrorNotification;
+import com.artfonapps.clientrestore.network.notifications.NotificationManager;
+import com.artfonapps.clientrestore.network.notifications.TimeWarningNotification;
 import com.artfonapps.clientrestore.network.requests.Communicator;
 import com.artfonapps.clientrestore.network.requests.CookieStorage;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
@@ -67,6 +69,8 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
     MainPagerAdapter mainPagerAdapter;
     boolean DEBUG;
+
+    public NotificationManager notificator;
 
     public boolean isVisible() {
         return isVisible;
@@ -185,7 +189,6 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         pages = new ArrayList<>();
         ids = new ArrayList<>();
         ButterKnife.bind(this);
-     //   vvp = (VerticalViewPager) findViewById(R.id.vvp);
         pages.add(createVPPage());
         initElements();
         pages.add(mainPage);
@@ -232,15 +235,16 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
             logger.log(Methods.load_points, generateDefaultContentValues());
             loadPoints();
         }
-        //       DEBUG = (getIntent().getStringExtra("pass") != null &&
-        //               getIntent().getStringExtra("pass").equals("3656834"));
 
         DEBUG = true;
+        notificator = NotificationManager.getInstance();
+        notificator.setActivity(this);
         vvp.setVisibility(View.INVISIBLE);
 
-
+        /*
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        */
         this.setVisible(true);
 
     }
@@ -251,7 +255,6 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         points.addAll(Helper.getPoints());
         orders.addAll(Helper.getOrders(points));
         setCurPoint();
-
     }
 
 
@@ -289,41 +292,17 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
             }
 
             if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(CookieStorage.startActivity);
-                contentValues = generateDefaultContentValues();
-                contentValues.put("stage", currentPoint.stage);
-                builder.setTitle("Предупреждение");
-                builder.setMessage("Вы слишком далеко от места назначения. Ваши координаты: " +
-                        currentLocation.getLatitude() + ":" + currentLocation.getLongitude() + ". Место находится тут: " +
-                        targetLocation.getLatitude() + ":" + targetLocation.getLongitude());
-                builder.setNeutralButton("ОК", (dialog, which) -> {
-                    dialog.dismiss();
-                });
-                logger.log(Methods.location_error, contentValues);
+                ArrayList<Location> locations = new ArrayList<>();
+                locations.add(currentLocation);
+                locations.add(targetLocation);
 
-                AlertDialog alert = builder.create();
-                alert.show();
-                return;
+                notificator.addNotify(new LocationErrorNotification(this, locations));
+                notificator.showPlanedNotifies();
+
             }
             if ((System.currentTimeMillis() - lastClick) / 1000 < 300) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(CookieStorage.startActivity);
-                contentValues = generateDefaultContentValues();
-                contentValues.put("stage", currentPoint.stage);
-                // (new LogTask()).execute(Methods.time_warning, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
-                builder.setTitle("Предупреждение");
-                builder.setMessage("Предыдущее действие было выполнено менее чем 5 минут назад. Вы уверены, что хотите продолжить?");
-
-                builder.setPositiveButton("Да", (dialog, which) -> {
-                    onSuccessClick(currentPoint);
-                    dialog.dismiss();
-                    logger.log(Methods.time_warning, contentValues);
-                });
-
-                builder.setNegativeButton("Нет", (dialog, which) -> {
-                    dialog.dismiss();
-                });
-                AlertDialog alert = builder.create();
-                alert.show();
+                notificator.addNotify(new TimeWarningNotification(this));
+                notificator.showPlanedNotifies();
             } else {
                 if (currentPoint != null){
                     contentValues = generateDefaultContentValues();
@@ -612,8 +591,13 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     public void onResume() {
         try {
             super.onResume();
+            if (this.phoneNumber == null || this.phoneNumber.isEmpty()){
+                logout();
+            }
+            setVisible(true);
+            notificator.showPlanedNotifies();
+
             BusProvider.getInstance().register(this);
-            this.setVisible(true);
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

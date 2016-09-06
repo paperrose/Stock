@@ -4,8 +4,10 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -16,6 +18,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.artfonapps.clientrestore.R;
+import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.db.AlertPointItem;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Point;
@@ -23,6 +26,7 @@ import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
 import com.artfonapps.clientrestore.network.events.local.LogoutEvent;
 import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
 import com.artfonapps.clientrestore.network.events.pushes.UpdateEvent;
+import com.artfonapps.clientrestore.network.requests.Communicator;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
 import com.artfonapps.clientrestore.views.StartActivity;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -37,14 +41,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
+//тут не только Intent'ы от GCM
 public class GCMIntentService extends IntentService {
     String description;
     private Handler handler;
     public GCMIntentService() {
         super("GcmIntentService");
     }
-    private static final int NOTIFY_ID = 101;
+
+
+    private Communicator communicator = Communicator.INSTANCE;
 
     private static HashMap<String, String> orders;
 
@@ -72,6 +83,7 @@ public class GCMIntentService extends IntentService {
             GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
             String messageType = gcm.getMessageType(intent);
 
+
             description = extras.getString("description");
             if (description == null) {
                 description = extras.getString("data");
@@ -85,18 +97,51 @@ public class GCMIntentService extends IntentService {
         try {
             jobj = new JSONObject(description);
             String type = jobj.optString("type");
-            Log.e("Push", description);
+
             switch (type) {
                 case "new_order":
-                    showToastNew(jobj.getString("order_id"), description);
+                    if (jobj.getJSONArray("points").length() == 0) {
+                        //Костыльная жесть
+                        //Посылает второй запрос чтобы получить точки с сервера если они не пришли с пушем
+                        //@TODO: Убей меня и сделай нормальный перезапрос если нет точек
+                        //А ты все равно не работаешь
+                        ContentValues values = new ContentValues();
+                        values.put(Fields.MOBILE, jobj.getString("phone_number"));
+                        communicator.refreshOrdersPoints(values, new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                try {
+                                    showToastNew(jobj.getString("order_id"), description);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                return;
+                            }
+                        });
+                    }
+                    else{
+                        showToastNew(jobj.getString("order_id"), description);
+
+                    }
                     break;
                 case "removed":
                     showToastRemoved(jobj.getString("order_id"), description);
                     break;
                 case "logout":
+                    final SharedPreferences prefs = getSharedPreferences("GCM_prefs", 0);
+                    String registrationId = prefs.getString("PROPERTY_REG_ID", "");
                     handler.post(() -> {
-                        BusProvider.getInstance()
-                                .post(produceLogoutEvent());
+                        try {
+                            if (registrationId.equals(jobj.getString(Fields.DEVICE_ID)))
+                                BusProvider.getInstance()
+                                    .post(produceLogoutEvent());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     });
                     break;
                 default:
@@ -219,6 +264,19 @@ public class GCMIntentService extends IntentService {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            //Вторая часть костыля, если точек нет в description, то поищем их в локальной базе
+            if (points2.isEmpty() ){
+                List<Point> pts = Helper.getPointsInOrder(Integer.parseInt(order_id));
+                for (Point p : pts){
+                    try {
+                        points2.add(new AlertPointItem(p.getJsonDesc()));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+
             Context context = getApplicationContext();
             Intent notificationIntent = new Intent(context, StartActivity.class);
             Bundle bundle = new Bundle();

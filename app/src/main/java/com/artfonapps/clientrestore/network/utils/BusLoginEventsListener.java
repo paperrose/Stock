@@ -82,6 +82,11 @@ public class BusLoginEventsListener {
 
     @Subscribe
     public void onErrorEvent(ErrorEvent event) {
+        //Для совместимости с api v1.0// Все ресурсы мы и так знаем, если их нет значит не поддерживается
+        //Вообще не плохо было получать манифест от API с доступными методами
+        if (event.getErrorCode() == 404)
+            return;
+
         Toast.makeText(login, LoginActivity.SERVER_ERROR, Toast.LENGTH_LONG).show();
         login.getNext().setProgress(0);
     }

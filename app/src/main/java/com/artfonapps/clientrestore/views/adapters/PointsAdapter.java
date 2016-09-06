@@ -30,6 +30,8 @@ import butterknife.ButterKnife;
 public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder> {
     public static final String DOWNLOAD = "Загрузка";
     public static final String UPLOAD = "Выгрузка";
+    public static final String CONTACT_PHONE_NUMBER_ERROR = "Неверно указан телефонный номер";
+    public static final String CALL_PERMISSION_ERROR = "У приложения нет разрешения на звонки";
 
     //TODO change with recyclerView!!!
 
@@ -72,10 +74,15 @@ public class PointsAdapter extends RecyclerView.Adapter<PointsAdapter.ViewHolder
         holder.expand.setTag(position);
         holder.itemPanel.setTag(position);
         holder.call.setOnClickListener(v -> {
+            String contactPhone = items.get((Integer)v.getTag()).getContact();
+            if (contactPhone == null || contactPhone.isEmpty()) {
+                Toast.makeText(activity, CONTACT_PHONE_NUMBER_ERROR, Toast.LENGTH_LONG );
+                return;
+            }
             Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + items.get((Integer)v.getTag()).getContact()));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(activity, "У приложения нет разрешения на звонки",  Toast.LENGTH_LONG);
+                Toast.makeText(activity, CALL_PERMISSION_ERROR, Toast.LENGTH_LONG);
                 return;
             }
             context.startActivity(intent);

@@ -37,8 +37,8 @@ import retrofit2.Retrofit;
  */
 public class Communicator {
     private static final String TAG = "CommunicatorStock";
-//    public static String debugDomainName = "http://192.168.0.122:8080/";
-    public static String debugDomainName = "http://95.213.191.92:8098/";
+    public static String debugDomainName = "http://192.168.0.122:8080/";
+    //public static String debugDomainName = "http://95.213.191.92:8098/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
 
@@ -358,5 +358,14 @@ public class Communicator {
         );
         response.enqueue(commonCommunicate("log"));
     }
+    //@TODO: убрать
+    public void refreshOrdersPoints(ContentValues values, Callback<ResponseBody> callback ){
+        RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
+        Call<ResponseBody> response = communicatorInterface.reqJobTask(
+                getCurrentCookies(),
+                values.getAsString(Fields.MOBILE)
+        );
+        response.enqueue(callback);
 
+    }
 }

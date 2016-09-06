@@ -173,18 +173,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         phoneNumber = prefs.getString("PROPERTY_MOBILE", "");
 
-  /*      Location testLocation1 = new Location("");
-        testLocation1.setLongitude(38.0209606);
-        testLocation1.setLatitude(55.902327);
-        Location testLocation2 = new Location("");
-        testLocation2.setLongitude(38.015796);
-        testLocation2.setLatitude(55.90798);
-        Location testLocation3 = new Location("");
-        testLocation3.setLongitude(37.576259);
-        testLocation3.setLatitude(55.607606);*/
-
-
-
         mProgressView = findViewById(R.id.disableLayout);
         mProgressView.setAlpha(1);
         setReceiver();
@@ -238,52 +226,49 @@ public class MainActivity extends AppCompatActivity {
         pointCall = (ImageButton) findViewById(R.id.callPoint);
         arrivalTime = (TextView) findViewById(R.id.taskDescription);
         fab = (CircularProgressButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    (new LogTask()).execute(Methods.location_error, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
-                    builder.setTitle("Предупреждение");
-                    builder.setMessage("Вы слишком далеко от места назначения. Ваши координаты: " +
-                            currentLocation.getLatitude() + ":" + currentLocation.getLongitude() + ". Место находится тут: " +
-                            targetLocation.getLatitude() + ":" + targetLocation.getLongitude());
+        fab.setOnClickListener(view -> {
+            if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                (new LogTask()).execute(Methods.location_error, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
+                builder.setTitle("Предупреждение");
+                builder.setMessage("Вы слишком далеко от места назначения. Ваши координаты: " +
+                        currentLocation.getLatitude() + ":" + currentLocation.getLongitude() + ". Место находится тут: " +
+                        targetLocation.getLatitude() + ":" + targetLocation.getLongitude());
 
-                    builder.setNeutralButton("ОК", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                    return;
-                }
-                if ((System.currentTimeMillis() - lastClick) / 1000 < 300) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    (new LogTask()).execute(Methods.time_warning, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
-                    builder.setTitle("Предупреждение");
-                    builder.setMessage("Предыдущее действие было выполнено менее чем 5 минут назад. Вы уверены, что хотите продолжить?");
-
-                    builder.setPositiveButton("Да", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            onButtonClick();
-                            dialog.dismiss();
-                        }
-                    });
-
-                    builder.setNegativeButton("Нет", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                } else {
-                    onButtonClick();
-                }
-
+                builder.setNeutralButton("ОК", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
+                return;
             }
+            if ((System.currentTimeMillis() - lastClick) / 1000 < 300) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                (new LogTask()).execute(Methods.time_warning, Integer.toString(currentOperation), Integer.toString(curId), Integer.toString(stage));
+                builder.setTitle("Предупреждение");
+                builder.setMessage("Предыдущее действие было выполнено менее чем 5 минут назад. Вы уверены, что хотите продолжить?");
+
+                builder.setPositiveButton("Да", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        onButtonClick();
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.setNegativeButton("Нет", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
+            } else {
+                onButtonClick();
+            }
+
         });
 
 
