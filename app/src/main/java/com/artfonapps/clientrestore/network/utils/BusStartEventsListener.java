@@ -1,13 +1,27 @@
 package com.artfonapps.clientrestore.network.utils;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.NotificationCompat;
 import android.view.View;
 import android.widget.Toast;
 
 import com.artfonapps.clientrestore.R;
+import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.db.Helper;
+import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.db.Point;
+import com.artfonapps.clientrestore.messages.LoginFromOtherDeviceAlertMessage;
+import com.artfonapps.clientrestore.messages.OrderCanceledAlertMessage;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
 import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
@@ -19,8 +33,6 @@ import com.artfonapps.clientrestore.network.events.requests.LoadPointsEvent;
 import com.artfonapps.clientrestore.network.events.requests.RejectEvent;
 import com.artfonapps.clientrestore.network.logger.Logger;
 import com.artfonapps.clientrestore.network.logger.Methods;
-import com.artfonapps.clientrestore.network.notifications.NewOrderNotification;
-import com.artfonapps.clientrestore.network.notifications.OrderCanceledNotification;
 import com.artfonapps.clientrestore.network.requests.Communicator;
 import com.artfonapps.clientrestore.views.StartActivity;
 import com.squareup.otto.Subscribe;
@@ -28,8 +40,11 @@ import com.squareup.otto.Subscribe;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
+import java.util.Random;
 
 public class BusStartEventsListener {
 
@@ -76,7 +91,14 @@ public class BusStartEventsListener {
 
     @Subscribe
     public void onLogoutEvent(LogoutEvent event) {
-        start.logout();
+
+        LoginFromOtherDeviceAlertMessage message = new LoginFromOtherDeviceAlertMessage(start.messenger, ()-> {
+            //Надо разделить смену активности и gcmUnregister
+            start.logout();
+        });
+        start.messenger.addMessage(message);
+        start.messenger.showMessages();
+        //start.messenger.showMessage(message);
     }
 
 
@@ -94,14 +116,63 @@ public class BusStartEventsListener {
 
     @Subscribe
     public void onLocalDeleteEvent(LocalDeleteEvent localDeleteEvent) {
-        start.notificator.addNotify(new OrderCanceledNotification(start, localDeleteEvent));
-        start.notificator.showPlanedNotifies();
+        int orderId = localDeleteEvent.getCurOrder();
+        boolean orderExist = false;
+        ContentValues logValues = start.generateDefaultContentValues();
+        logValues.put("id_traffic", orderId);
+
+        try {
+            ArrayList<Point> allPoints = new ArrayList<>();
+            ArrayList<Order> orders = new ArrayList<>();
+
+            allPoints.addAll(Helper.getPoints());
+            orders.addAll(Helper.getOrders(allPoints));
+            for (Order order : orders) {
+                orderExist = orderId == order.getIdListTraffic();
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            List<Point> points = Helper.getPointsInOrder(orderId);
+
+            Helper.deleteOrder(orderId);
+            start.setCurPoint();
+            start.refresh();
+
+            if (localDeleteEvent.isFromPush()) {
+
+                if (!orderExist)
+                    return;
+
+                Runnable logAction = () -> logger.log(Methods.canceled, logValues);
+                //Сигнатура коструктора должна быть messenger, content, actions
+                OrderCanceledAlertMessage message = new OrderCanceledAlertMessage(start.messenger, orderId, points);
+                message.setOnPossitiveAction(logAction);
+
+                start.messenger.addMessage(message);
+                start.messenger.showMessages();
+
+            }
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(Fields.ID, orderId);
+            contentValues.put(Fields.ACCEPTED, 0);
+
+            logger.log(Methods.remove, logValues);
+            communicator.communicate(Methods.remove, contentValues, false);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 
     @Subscribe
     public void onUpdateEvent(UpdateEvent updateEvent) {
-
         start.loadPoints();
     }
 
@@ -121,9 +192,103 @@ public class BusStartEventsListener {
 
     @Subscribe
     public void onNewOrderEvent(NewOrderEvent newOrderEvent) {
-        start.notificator.addNotify(new NewOrderNotification(start, newOrderEvent));
-        start.notificator.showPlanedNotifies();
+        Context context =  start.getApplicationContext();
+        Intent notificationIntent = new Intent(context, StartActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("theme", "show_message");
+        bundle.putInt("message_id", 1);
 
+        notificationIntent.putExtras(bundle);
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent contentIntent = PendingIntent.getActivity(start.getApplicationContext(),
+                new Random().nextInt(),
+                notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification notification = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.drawable.logo)
+                .setContentTitle("Системное сообщение")
+                .setContentText("Выполнен повторный вход в систему с другого устройства")
+                .setStyle(new NotificationCompat.InboxStyle())
+                .setContentIntent(contentIntent)
+                .build();
+
+        notification.flags = Notification.FLAG_AUTO_CANCEL;
+
+        NotificationManager notificationManager = (NotificationManager) context
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, notification);
+
+        Uri notification2 = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Ringtone r = RingtoneManager.getRingtone(start.getApplicationContext(), notification2);
+        r.play();
+        /*
+        try {
+
+            ArrayList<AlertPointItem> points = new ArrayList<>();
+            final int order_id = newOrderEvent.getCurOrder();
+            try {
+                JSONArray pointsJson = newOrderEvent.getResponseObject().getJSONArray("points");
+                for (int i = 0; i< pointsJson.length(); i++){
+                    points.add(new AlertPointItem((JSONObject) pointsJson.get(i)));
+                }
+            }
+            catch (JSONException e){
+                e.printStackTrace();
+            }
+
+            final ContentValues contentValues = start.generateDefaultContentValues();
+            contentValues.put("id_traffic", order_id);
+
+            final ContentValues reqValues = new ContentValues();
+            reqValues.put(Fields.ID, order_id);
+
+            Runnable acceptOrderAction = () -> {
+                start.incCurrentOperation();
+                logger.log(Methods.accept, contentValues);
+
+                reqValues.put(Fields.ACCEPTED, 1);
+                android.app.NotificationManager notificationManager = (android.app.NotificationManager) start.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(reqValues.getAsInteger(Fields.ID));
+                Communicator.INSTANCE.communicate(Methods.accept, reqValues, false);
+                start.refresh();
+            };
+
+            Runnable declineOrderAction = () ->{
+                start.incCurrentOperation();
+                logger.log(Methods.reject, contentValues);
+                reqValues.put(Fields.ACCEPTED, 0);
+                if (start.getApiVersion() == null) {
+                    try {
+                        Helper.deleteOrder(order_id);
+                        start.setCurPoint();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                android.app.NotificationManager notificationManager = (android.app.NotificationManager) start.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(reqValues.getAsInteger(Fields.ID));
+
+                Communicator.INSTANCE.communicate(Methods.reject, reqValues, false);
+                start.refresh();
+            };
+
+            start.incCurrentOperation();
+
+            NewOrderAlertMessage message = new NewOrderAlertMessage(start.messenger, order_id, points);
+            message.setOnPossitiveAction(acceptOrderAction);
+            message.setOnNegativeAction(declineOrderAction);
+
+            start.messenger.addMessage(message);
+            start.messenger.showMessages();
+            logger.log(Methods.view_new_order, contentValues);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        */
     }
 
     @Subscribe
@@ -164,10 +329,10 @@ public class BusStartEventsListener {
         if (changed) {
             start.incCurrentOperation();
             currentPoint = start.getCurrentPoint();
-            logger.log(currentPoint != null ? Methods.change_point_auto : Methods.end_route ,logValues);
+            logger.log(currentPoint != null ? Methods.change_point_auto : Methods.end_route, logValues);
         }
 
-       // points.clear();
+        // points.clear();
         //points.addAll(Helper.getPoints());
 
         start.refresh();

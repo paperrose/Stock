@@ -11,7 +11,6 @@ public class StockApplication extends com.activeandroid.app.Application{
     private static Context appContext;
     private static SharedPreferences prefs;
 
-    public final static int APPLICATION_CALL_PERMISSION_REQUEST = 0;
 
     @Override
     public void onCreate() {

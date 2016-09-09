@@ -2,6 +2,7 @@ package com.artfonapps.clientrestore.network.utils;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
@@ -9,10 +10,13 @@ import com.artfonapps.clientrestore.network.events.requests.LoginEvent;
 import com.artfonapps.clientrestore.network.events.requests.SendCodeEvent;
 import com.artfonapps.clientrestore.network.events.requests.SendPhoneEvent;
 import com.artfonapps.clientrestore.network.logger.Logger;
+import com.artfonapps.clientrestore.network.pushes.GCMRegistrationService;
 import com.artfonapps.clientrestore.network.requests.Communicator;
 import com.artfonapps.clientrestore.network.requests.CookieStorage;
 import com.artfonapps.clientrestore.views.LoginActivity;
 import com.artfonapps.clientrestore.views.StartActivity;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.squareup.otto.Subscribe;
 
 public class BusLoginEventsListener {
@@ -75,6 +79,14 @@ public class BusLoginEventsListener {
         editor.putString("PROPERTY_MOBILE", login.getPhoneNumber());
         editor.commit();
         login.getNext().setProgress(0);
+
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with GCM.
+            Intent registerGCM = new Intent(login, GCMRegistrationService.class);
+            registerGCM.putExtra("type", GCMRegistrationService.OPERATION_TYPE_LOGIN);
+            login.startService(registerGCM);
+        }
+
         login.startActivity(intent);
         login.finish();
 
@@ -90,4 +102,23 @@ public class BusLoginEventsListener {
         Toast.makeText(login, LoginActivity.SERVER_ERROR, Toast.LENGTH_LONG).show();
         login.getNext().setProgress(0);
     }
+
+    private boolean checkPlayServices() {
+        //Обработчик из примера
+        //Заменить на свой
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(login);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+
+                apiAvailability.getErrorDialog(login, resultCode, 9000)
+                        .show();
+            } else {
+                Log.i("Login", "This device is not supported.");
+            }
+            return false;
+        }
+        return true;
+    }
+
 }

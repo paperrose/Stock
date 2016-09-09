@@ -33,6 +33,12 @@ public interface RequestInterface {
                                @Field(Fields.PHONE_NUMBER) String phoneNumber,
                                @Field(Fields.DEVICEID) String deviceId);
 
+    @FormUrlEncoded
+    @POST("api/auto/mobile/registerGCM")
+    Call<ResponseBody> registerGCM(@Header("Cookie") String cookie,
+                              @Field(Fields.MOBILE) String phoneNumber,
+                              @Field(Fields.DEVICE_ID) String device_id);
+
 
     @FormUrlEncoded
     @POST("api/auto/mobile/job/point")

@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,7 +18,6 @@ import android.util.Log;
 
 import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.constants.Fields;
-import com.artfonapps.clientrestore.db.AlertPointItem;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
@@ -36,20 +34,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 //тут не только Intent'ы от GCM
 public class GCMIntentService extends IntentService {
     String description;
     private Handler handler;
+
     public GCMIntentService() {
         super("GcmIntentService");
     }
@@ -73,9 +66,11 @@ public class GCMIntentService extends IntentService {
 
         handler = new Handler();
     }
+
     @Override
     protected void onHandleIntent(Intent intent) {
 
+        Log.e("psh", "push recive");
         //Пересмотреть обработчик
         try {
 
@@ -100,33 +95,7 @@ public class GCMIntentService extends IntentService {
 
             switch (type) {
                 case "new_order":
-                    if (jobj.getJSONArray("points").length() == 0) {
-                        //Костыльная жесть
-                        //Посылает второй запрос чтобы получить точки с сервера если они не пришли с пушем
-                        //@TODO: Убей меня и сделай нормальный перезапрос если нет точек
-                        //А ты все равно не работаешь
-                        ContentValues values = new ContentValues();
-                        values.put(Fields.MOBILE, jobj.getString("phone_number"));
-                        communicator.refreshOrdersPoints(values, new Callback<ResponseBody>() {
-                            @Override
-                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                try {
-                                    showToastNew(jobj.getString("order_id"), description);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                                return;
-                            }
-                        });
-                    }
-                    else{
-                        showToastNew(jobj.getString("order_id"), description);
-
-                    }
+                    showToastNew(jobj.getString("order_id"), description);
                     break;
                 case "removed":
                     showToastRemoved(jobj.getString("order_id"), description);
@@ -138,7 +107,7 @@ public class GCMIntentService extends IntentService {
                         try {
                             if (registrationId.equals(jobj.getString(Fields.DEVICE_ID)))
                                 BusProvider.getInstance()
-                                    .post(produceLogoutEvent());
+                                        .post(produceLogoutEvent());
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -151,7 +120,7 @@ public class GCMIntentService extends IntentService {
 
         } catch (JSONException e) {  //Сюда выпадает в случае если нет сообщения в Intent'е, а так как интент хендлер еще и другие броадкасты кроме gcm получет выпадает здесь с nullPointer
             e.printStackTrace();
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             Log.w("Intent", "Empty message in handled Intent", e);
         }
 
@@ -167,18 +136,18 @@ public class GCMIntentService extends IntentService {
     }
 
     @Produce
-    public LocalDeleteEvent produceDeleteEvent(int orderId, JSONArray array)  {
+    public LocalDeleteEvent produceDeleteEvent(int orderId, JSONArray array) {
 
         return new LocalDeleteEvent().setCurOrder(orderId).setPoints(array).setFromPush(true);
     }
 
     @Produce
-    public NewOrderEvent produceNewOrderEvent(JSONObject order, int orderId){
+    public NewOrderEvent produceNewOrderEvent(JSONObject order, int orderId) {
         return new NewOrderEvent(order).setCurOrder(orderId);
     }
 
     @Produce
-    public UpdateEvent produceUpdateEvent(){
+    public UpdateEvent produceUpdateEvent() {
         return new UpdateEvent();
     }
 
@@ -228,7 +197,7 @@ public class GCMIntentService extends IntentService {
         });
     }
 
-    public void showToastNew(final String order_id, final String m_desc){
+    public void showToastNew(final String order_id, final String m_desc) {
         handler.post(() -> {
 
 
@@ -244,73 +213,12 @@ public class GCMIntentService extends IntentService {
                 e.printStackTrace();
             }
 
-
-            ArrayList<AlertPointItem> points2 = new ArrayList<>();
-            String bigTextS = "";
-            try {
-
-                JSONObject jobj = new JSONObject(m_desc);
-                JSONArray pts = jobj.getJSONArray("points");
-                for (int i = 0; i < pts.length(); i++) {
-                    points2.add(new AlertPointItem(pts.getJSONObject(i)));
-                    bigTextS += points2.get(i).getPoint();
-                    bigTextS += System.getProperty("line.separator");
-                    bigTextS += points2.get(i).getAddress();
-                    bigTextS += System.getProperty("line.separator");
-                    bigTextS += points2.get(i).getFormatPlanDatetime();
-                    bigTextS += System.getProperty("line.separator");
-                    bigTextS += System.getProperty("line.separator");
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            //Вторая часть костыля, если точек нет в description, то поищем их в локальной базе
-            if (points2.isEmpty() ){
-                List<Point> pts = Helper.getPointsInOrder(Integer.parseInt(order_id));
-                for (Point p : pts){
-                    try {
-                        points2.add(new AlertPointItem(p.getJsonDesc()));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-
-            Context context = getApplicationContext();
-            Intent notificationIntent = new Intent(context, StartActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putString("type", "new_order_click");
-            bundle.putString("desc", m_desc);
-            bundle.putString("order_id", order_id);
-            notificationIntent.putExtras(bundle);
-            notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
-                    new Random().nextInt(), notificationIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT);
-            Notification notification = new NotificationCompat.Builder(context)
-                    .setSmallIcon(R.drawable.logo)
-                    .setContentTitle("Новый заказ")
-                    .setContentText("Потяните вниз для просмора")
-                    .setStyle(new NotificationCompat.BigTextStyle().bigText(bigTextS))
-                    .setContentIntent(contentIntent)
-                    .build();
-
-            notification.flags = Notification.FLAG_AUTO_CANCEL;
-
-            NotificationManager notificationManager = (NotificationManager) context
-                    .getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.notify(Integer.parseInt(order_id), notification);
-            Uri notification2 = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification2);
-            r.play();
-
         });
 
     }
 
 
-    public void showToast(){
+    public void showToast() {
         handler.post(() -> {
             Context context = getApplicationContext();
             Intent intent2 = new Intent("refresh_push_count");

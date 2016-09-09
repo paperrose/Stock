@@ -15,11 +15,12 @@ public class GCMBroadcastReceiver extends WakefulBroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.e("push_recivier", "resived");
         try {
             context.sendBroadcast(new Intent("com.google.android.intent.action.GTALK_HEARTBEAT"));
             context.sendBroadcast(new Intent("com.google.android.intent.action.MCS_HEARTBEAT"));
             ComponentName comp = new ComponentName(context.getPackageName(),
-                    GCMIntentService.class.getName());
+                   GCMListenerService.class.getName());
             startWakefulService(context, (intent.setComponent(comp)));
             setResultCode(Activity.RESULT_OK);
         } catch (Exception e) {
@@ -27,4 +28,6 @@ public class GCMBroadcastReceiver extends WakefulBroadcastReceiver {
         }
 
     }
+
+
 }

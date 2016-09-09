@@ -30,13 +30,12 @@ import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.db.Point;
-import com.artfonapps.clientrestore.network.events.local.LocalDeleteEvent;
-import com.artfonapps.clientrestore.network.events.pushes.NewOrderEvent;
+import com.artfonapps.clientrestore.messages.AlertMessenger;
+import com.artfonapps.clientrestore.messages.LocationErrorAlertMessage;
+import com.artfonapps.clientrestore.messages.TimeWarningAlertMessage;
 import com.artfonapps.clientrestore.network.logger.Logger;
 import com.artfonapps.clientrestore.network.logger.Methods;
-import com.artfonapps.clientrestore.network.notifications.LocationErrorNotification;
-import com.artfonapps.clientrestore.network.notifications.NotificationManager;
-import com.artfonapps.clientrestore.network.notifications.TimeWarningNotification;
+import com.artfonapps.clientrestore.network.pushes.GCMRegistrationService;
 import com.artfonapps.clientrestore.network.requests.Communicator;
 import com.artfonapps.clientrestore.network.requests.CookieStorage;
 import com.artfonapps.clientrestore.network.utils.BusProvider;
@@ -44,11 +43,9 @@ import com.artfonapps.clientrestore.network.utils.BusStartEventsListener;
 import com.artfonapps.clientrestore.views.adapters.MainPagerAdapter;
 import com.artfonapps.clientrestore.views.utils.VerticalViewPager;
 import com.dd.CircularProgressButton;
-import com.squareup.otto.Produce;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,13 +61,13 @@ import static com.artfonapps.clientrestore.StockApplication.getPrefs;
  * Created by Emil on 11.08.2016.
  */
 
-public class StartActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class StartActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, IShownToUser {
     Communicator communicator;
 
     MainPagerAdapter mainPagerAdapter;
     boolean DEBUG;
 
-    public NotificationManager notificator;
+    public static AlertMessenger messenger;
 
     public boolean isVisible() {
         return isVisible;
@@ -129,7 +126,6 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     ArrayList<Order> orders = new ArrayList<>();
     Logger logger;
 
-
     View mainPage;
 
     int currentOperation = -1;
@@ -174,6 +170,10 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (messenger == null)
+            messenger = new AlertMessenger(this);
+
         setContentView(R.layout.activity_main_new);
         prefs = getPrefs();
         appContext = getContext();
@@ -237,8 +237,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         }
 
         DEBUG = true;
-        notificator = NotificationManager.getInstance();
-        notificator.setActivity(this);
+
         vvp.setVisibility(View.INVISIBLE);
 
         /*
@@ -295,14 +294,26 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                 ArrayList<Location> locations = new ArrayList<>();
                 locations.add(currentLocation);
                 locations.add(targetLocation);
+                //Фабрику бы по производству алертов
+                messenger.addMessage(new LocationErrorAlertMessage(messenger, locations));
+                messenger.showMessages();
 
-                notificator.addNotify(new LocationErrorNotification(this, locations));
-                notificator.showPlanedNotifies();
+                ContentValues contentValues = generateDefaultContentValues();
+                contentValues.put("stage", getCurrentPoint().stage);
+                logger.log(Methods.location_error, contentValues);
 
             }
             if ((System.currentTimeMillis() - lastClick) / 1000 < 300) {
-                notificator.addNotify(new TimeWarningNotification(this));
-                notificator.showPlanedNotifies();
+
+                messenger.addMessage(new TimeWarningAlertMessage(messenger, ()->{
+                    ContentValues contentValues = generateDefaultContentValues();
+                    contentValues.put("stage", getCurrentPoint().stage);
+                    logger.log(Methods.time_warning, contentValues);
+                    onSuccessClick(currentPoint);
+                }));
+
+                messenger.showMessages();
+
             } else {
                 if (currentPoint != null){
                     contentValues = generateDefaultContentValues();
@@ -460,11 +471,17 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
 
     public void logout(){
 
+        this.messenger.clearMessages();
+
         ContentValues contentValues = new ContentValues();
         contentValues.put(Fields.PHONE_NUMBER, phoneNumber );
         contentValues.put(Fields.DEVICEID, prefs.getString("PROPERTY_REG_ID",  ""));
         communicator.communicate(Methods.logout, contentValues, false);
         prefs.edit().clear().commit();
+
+        Intent unregisterGcm = new Intent(appContext, GCMRegistrationService.class);
+        unregisterGcm.putExtra("type", GCMRegistrationService.OPERATION_TYPE_LOGOUT);
+        startService(unregisterGcm);
 
         Intent intent = new Intent(appContext, LoginActivity.class);
         startActivity(intent);
@@ -555,47 +572,29 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         }
     };
 
-    @Produce
-    public NewOrderEvent produceNewOrderEvent() {
-        try {
-            if (getIntent().getStringExtra("type") != null &&
-                    getIntent().getStringExtra("type").equals("new_order_click")) {
-                getIntent().putExtra("type", "");
-                return new NewOrderEvent(new JSONObject(getIntent()
-                        .getStringExtra("desc")))
-                        .setCurOrder(Integer.parseInt(getIntent().getStringExtra("order_id")));
-            } else return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+    private void showPlanedMessages(){
 
-    @Produce
-    public LocalDeleteEvent produceLocalDeleteEvent() {
-        try {
-            if (getIntent().getStringExtra("type") != null &&
-                    getIntent().getStringExtra("type").equals("removed")) {
-                getIntent().putExtra("type", "");
-                return new LocalDeleteEvent()
-                        .setFromPush(true)
-                        .setCurOrder(Integer.parseInt(getIntent().getStringExtra("order_id")));
-            } else return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        if (getIntent().hasExtra("theme") &&
+                getIntent().getStringExtra("theme").equals("show_message")){
+
+            messenger.showMessage(getIntent().getIntExtra("message_id", -1));
+            return;
         }
+        messenger.showMessages();
     }
 
     @Override
     public void onResume() {
         try {
             super.onResume();
+
             if (this.phoneNumber == null || this.phoneNumber.isEmpty()){
                 logout();
             }
+
             setVisible(true);
-            notificator.showPlanedNotifies();
+            messenger.setContext(this);
+            showPlanedMessages();
 
             BusProvider.getInstance().register(this);
 

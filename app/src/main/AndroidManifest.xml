@@ -2,7 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.artfonapps.clientrestore">
 
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="23" />
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="23" />
+
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -12,42 +15,52 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <!--<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" /> -->
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
-    <permission android:name="com.artfonapps.clientrestore.permission.C2D_MESSAGE"/>
-
-
-    <uses-permission android:name="com.artfonapps.clientrestore.permission.C2D_MESSAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <application android:theme="@style/AppTheme" android:label="@string/app_name" android:icon="@drawable/logo"
-        android:name=".StockApplication">
-        <receiver android:name="com.artfonapps.clientrestore.network.pushes.GCMBroadcastReceiver"
+    <permission android:name="com.artfonapps.clientrestore.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="com.artfonapps.clientrestore.permission.C2D_MESSAGE" />
+
+
+    <application
+        android:name=".StockApplication"
+        android:icon="@drawable/logo"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <!--<receiver
+            android:name=".network.pushes.GCMBroadcastReceiver"
+            android:exported="false"
             android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.USER_PRESENT" />
-                <category android:name="com.artfonapps.clientrestore" />
+                <category android:name="com.something" />
+
             </intent-filter>
-        </receiver>
-        <service android:name="com.artfonapps.clientrestore.network.pushes.GCMIntentService" />
-        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+        </receiver>-->
 
-        <activity android:theme="@style/AppTheme"
-            android:label="@string/app_name"
-
-            android:name=".views.MainActivity"
-
-            android:excludeFromRecents="true">
-
-        </activity>
+        <!--<service
+            android:name="com.artfonapps.clientrestore.network.pushes.GCMIntentService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>-->
 
 
-        <activity android:theme="@style/AppTheme" android:label="@string/app_name"
+
+        <activity
             android:name="com.artfonapps.clientrestore.views.StartActivity"
-            >
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -55,21 +68,78 @@
         </activity>
 
 
-        <activity android:theme="@style/AppTheme" android:windowSoftInputMode="adjustResize" android:label="@string/app_name"
-            android:name=".views.LoginActivity" />
+        <activity
+            android:name=".views.LoginActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize" />
 
 
-        <meta-data android:name="AA_DB_NAME" android:value="PointsAA.db" />
-        <meta-data android:name="AA_DB_VERSION" android:value="3" />
-        <meta-data android:name="AA_MODELS" android:value="             com.artfonapps.clientrestore.db.Point         " />
-        <provider android:name="com.google.android.gms.measurement.AppMeasurementContentProvider" android:exported="false"
-            android:authorities="com.artfonapps.clientrestore.google_measurement_service" />
-        <receiver android:name="com.google.android.gms.measurement.AppMeasurementReceiver" android:enabled="true">
+        <receiver
+
+            android:name=".network.pushes.GCMBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter android:priority="10000">
+
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="com.artfonapps.clientrestore" />
+            </intent-filter>
+        </receiver>
+
+
+        <service
+            android:name=".network.pushes.GCMListenerService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="com.artfonapps.clientrestore.network.pushes.GCMIDListener"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID" />
+            </intent-filter>
+        </service>
+
+
+        <service
+            android:name="com.artfonapps.clientrestore.network.pushes.GCMRegistrationService"
+            android:exported="false">
+        </service>
+
+
+
+
+        <meta-data
+            android:name="AA_DB_NAME"
+            android:value="PointsAA.db" />
+        <meta-data
+            android:name="AA_DB_VERSION"
+            android:value="3" />
+        <meta-data
+            android:name="AA_MODELS"
+            android:value="com.artfonapps.clientrestore.db.Point"/>
+
+
+
+        <provider
+            android:name="com.google.android.gms.measurement.AppMeasurementContentProvider"
+            android:authorities="com.artfonapps.clientrestore.google_measurement_service"
+            android:exported="false" />
+
+        <receiver
+            android:name="com.google.android.gms.measurement.AppMeasurementReceiver"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.measurement.UPLOAD" />
             </intent-filter>
         </receiver>
-        <service android:name="com.google.android.gms.measurement.AppMeasurementService" android:enabled="true" android:exported="false" />
+        <service
+            android:name="com.google.android.gms.measurement.AppMeasurementService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
-
 </manifest>

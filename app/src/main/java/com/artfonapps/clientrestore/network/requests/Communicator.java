@@ -37,7 +37,7 @@ import retrofit2.Retrofit;
  */
 public class Communicator {
     private static final String TAG = "CommunicatorStock";
-    public static String debugDomainName = "http://192.168.0.122:8080/";
+    public static String debugDomainName = "http://192.168.0.143:8080/";
     //public static String debugDomainName = "http://95.213.191.92:8098/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
@@ -139,6 +139,11 @@ public class Communicator {
         return new RejectEvent(body);
     }
 
+    public void communicate (String method, ContentValues vars){
+        communicate(method, vars, false);
+    }
+
+
     public void communicate(String method, ContentValues vars, boolean isLog)  {
         try {
             if (isLog) {
@@ -176,6 +181,8 @@ public class Communicator {
                 case Methods.logout:
                     logout(Methods.logout, vars);
                     break;
+                case Methods.sendGCMDeviceId:
+                    sendGCMDeviceId(vars);
                 default:
                     break;
             }
@@ -231,8 +238,8 @@ public class Communicator {
                         case Methods.remove:
                             BusProvider.getInstance()
                                     .post(produceRejectEvent(response.body()));
-
                             break;
+
                         default:
                             break;
                     }
@@ -275,6 +282,16 @@ public class Communicator {
         return "";
     }
 
+
+    private void sendGCMDeviceId(ContentValues values) {
+        RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
+        Call<ResponseBody> response = communicatorInterface.registerGCM(
+                getCurrentCookies(),
+                values.getAsString(Fields.MOBILE),
+                values.getAsString(Fields.DEVICE_ID)
+        );
+        response.enqueue(commonCommunicate(Methods.sendGCMDeviceId));
+    }
 
     public void jobPoint(ContentValues values) throws JSONException {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);

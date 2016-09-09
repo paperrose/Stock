@@ -25,6 +25,7 @@ public class Methods {
     public static final String debug_push = "debug_push";
     public static final String send_code = "send_code";
     public static final String end_route = "end_route";
+    public static final String sendGCMDeviceId = "sendDeviceId";
     /*
         login - при авторизации
         load_points - отправили запрос job

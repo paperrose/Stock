@@ -8,13 +8,15 @@ import com.activeandroid.query.Select;
 import com.artfonapps.clientrestore.BuildConfig;
 import com.artfonapps.clientrestore.constants.Columns;
 import com.artfonapps.clientrestore.constants.JsonFields;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 
