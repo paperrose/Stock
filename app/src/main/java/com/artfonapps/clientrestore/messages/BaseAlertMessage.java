@@ -14,8 +14,9 @@ public class BaseAlertMessage implements IAlertMessage {
     protected boolean readed = false;
     protected boolean _redraw = false;
     protected int id;
+    protected Runnable _onDismiss;
 
-    BaseAlertMessage (IMessenger messenger){
+    BaseAlertMessage(IMessenger messenger) {
         this.messenger = messenger;
         this.id = new Random().nextInt();
     }
@@ -25,12 +26,21 @@ public class BaseAlertMessage implements IAlertMessage {
         return this.id;
     }
 
+    public void setOnDismissAction (Runnable onDismiss){
+        _onDismiss = onDismiss;
+    }
 
     @Override
     public void show() {
+
         dialog.setOnDismissListener(dialog -> {
-            if (!_redraw)
-                messenger.onMessageDismiss();
+            if (_redraw) {
+                return;
+            }
+            if (_onDismiss != null)
+                _onDismiss.run();
+
+            messenger.onMessageDismiss();
         });
         dialog.show();
     }

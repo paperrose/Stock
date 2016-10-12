@@ -1,26 +1,20 @@
 package com.artfonapps.clientrestore.network.utils;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.NotificationCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.artfonapps.clientrestore.R;
 import com.artfonapps.clientrestore.constants.Fields;
+import com.artfonapps.clientrestore.db.AlertPointItem;
 import com.artfonapps.clientrestore.db.Helper;
 import com.artfonapps.clientrestore.db.Order;
 import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.messages.LoginFromOtherDeviceAlertMessage;
+import com.artfonapps.clientrestore.messages.NewOrderAlertMessage;
 import com.artfonapps.clientrestore.messages.OrderCanceledAlertMessage;
 import com.artfonapps.clientrestore.network.events.ErrorEvent;
 import com.artfonapps.clientrestore.network.events.local.ChangeCurPointEvent;
@@ -37,6 +31,7 @@ import com.artfonapps.clientrestore.network.requests.Communicator;
 import com.artfonapps.clientrestore.views.StartActivity;
 import com.squareup.otto.Subscribe;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,7 +39,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Random;
 
 public class BusStartEventsListener {
 
@@ -94,6 +88,9 @@ public class BusStartEventsListener {
 
         LoginFromOtherDeviceAlertMessage message = new LoginFromOtherDeviceAlertMessage(start.messenger, ()-> {
             //Надо разделить смену активности и gcmUnregister
+            start.logout();
+        });
+        message.setOnDismissAction(()->{
             start.logout();
         });
         start.messenger.addMessage(message);
@@ -146,9 +143,15 @@ public class BusStartEventsListener {
                 if (!orderExist)
                     return;
 
+                JSONArray point_descs = localDeleteEvent.getPoints();
+                ArrayList< AlertPointItem> alertPointItems = new ArrayList<>();
+                for (int i =0; i < point_descs.length(); i++ ){
+                   alertPointItems.add(new AlertPointItem((JSONObject) point_descs.get(i)));
+                }
+
                 Runnable logAction = () -> logger.log(Methods.canceled, logValues);
-                //Сигнатура коструктора должна быть messenger, content, actions
-                OrderCanceledAlertMessage message = new OrderCanceledAlertMessage(start.messenger, orderId, points);
+
+                OrderCanceledAlertMessage message = new OrderCanceledAlertMessage(start.messenger, orderId, alertPointItems);
                 message.setOnPossitiveAction(logAction);
 
                 start.messenger.addMessage(message);
@@ -192,37 +195,7 @@ public class BusStartEventsListener {
 
     @Subscribe
     public void onNewOrderEvent(NewOrderEvent newOrderEvent) {
-        Context context =  start.getApplicationContext();
-        Intent notificationIntent = new Intent(context, StartActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("theme", "show_message");
-        bundle.putInt("message_id", 1);
-
-        notificationIntent.putExtras(bundle);
-        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent contentIntent = PendingIntent.getActivity(start.getApplicationContext(),
-                new Random().nextInt(),
-                notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Notification notification = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.logo)
-                .setContentTitle("Системное сообщение")
-                .setContentText("Выполнен повторный вход в систему с другого устройства")
-                .setStyle(new NotificationCompat.InboxStyle())
-                .setContentIntent(contentIntent)
-                .build();
-
-        notification.flags = Notification.FLAG_AUTO_CANCEL;
-
-        NotificationManager notificationManager = (NotificationManager) context
-                .getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(1, notification);
-
-        Uri notification2 = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone r = RingtoneManager.getRingtone(start.getApplicationContext(), notification2);
-        r.play();
-        /*
+        Log.d("eventFired", newOrderEvent.toString());
         try {
 
             ArrayList<AlertPointItem> points = new ArrayList<>();
@@ -288,7 +261,7 @@ public class BusStartEventsListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        */
+
     }
 
     @Subscribe

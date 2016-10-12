@@ -37,7 +37,7 @@ import retrofit2.Retrofit;
  */
 public class Communicator {
     private static final String TAG = "CommunicatorStock";
-    public static String debugDomainName = "http://192.168.0.143:8080/";
+    public static String debugDomainName = "http://192.168.0.122:8080/";
     //public static String debugDomainName = "http://95.213.191.92:8098/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
@@ -79,7 +79,7 @@ public class Communicator {
 
 
         retrofit = new Retrofit.Builder()
-                .baseUrl(debugDomainName)
+                .baseUrl(productionDomainName)
                 .callFactory(okHttpClient)
                 .build();
     }

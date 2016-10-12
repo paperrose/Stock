@@ -33,6 +33,7 @@ import com.artfonapps.clientrestore.db.Point;
 import com.artfonapps.clientrestore.messages.AlertMessenger;
 import com.artfonapps.clientrestore.messages.LocationErrorAlertMessage;
 import com.artfonapps.clientrestore.messages.TimeWarningAlertMessage;
+import com.artfonapps.clientrestore.network.events.EventManager;
 import com.artfonapps.clientrestore.network.logger.Logger;
 import com.artfonapps.clientrestore.network.logger.Methods;
 import com.artfonapps.clientrestore.network.pushes.GCMRegistrationService;
@@ -67,8 +68,10 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     MainPagerAdapter mainPagerAdapter;
     boolean DEBUG;
 
-    public static AlertMessenger messenger;
+    public static StartActivity currentStart;
 
+    public static AlertMessenger messenger;
+    public static EventManager eventManager;
     public boolean isVisible() {
         return isVisible;
     }
@@ -220,6 +223,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                     }
                 }
             }
+
         });
         if (CookieStorage.getInstance().getArrayList().isEmpty() || CookieStorage.getInstance().getArrayList().get(0).toString().isEmpty()) {
          //   ((TextView) findViewById(R.id.textAutorize)).setText("Авторизация...");
@@ -239,7 +243,9 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
         DEBUG = true;
 
         vvp.setVisibility(View.INVISIBLE);
-
+        currentStart = this;
+        eventManager = EventManager.get_instance();
+        eventManager.set_context(this);
         /*
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -290,7 +296,7 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
                 return;
             }
 
-            if (currentLocation.distanceTo(targetLocation) > 1000 && !DEBUG) {
+            if (currentLocation.distanceTo(targetLocation) > 2500 && !DEBUG) {
                 ArrayList<Location> locations = new ArrayList<>();
                 locations.add(currentLocation);
                 locations.add(targetLocation);
@@ -587,21 +593,27 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     public void onResume() {
         try {
             super.onResume();
+            BusProvider.getInstance().unregister(currentStart);
+            currentStart = this;
+
+            setVisible(true);
+            BusProvider.getInstance().register(this);
+
+            messenger.setContext(this);
+            eventManager.set_context(this);
+            eventManager.produceEvents();
 
             if (this.phoneNumber == null || this.phoneNumber.isEmpty()){
                 logout();
             }
 
-            setVisible(true);
-            messenger.setContext(this);
             showPlanedMessages();
-
-            BusProvider.getInstance().register(this);
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
+            ///Только на resume?
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                     1000 * 10, 10, locationListener);
             locationManager.requestLocationUpdates(
@@ -617,11 +629,15 @@ public class StartActivity extends AppCompatActivity implements NavigationView.O
     @Override
     public void onPause() {
         super.onPause();
-        BusProvider.getInstance().unregister(this);
-
         this.setVisible(false);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        currentStart = this;
+        eventManager.set_context(null);
+    }
 
     Location targetLocation = new Location("");
     Location currentLocation = new Location("");
