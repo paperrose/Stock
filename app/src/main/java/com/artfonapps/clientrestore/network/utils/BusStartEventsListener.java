@@ -149,10 +149,14 @@ public class BusStartEventsListener {
                    alertPointItems.add(new AlertPointItem((JSONObject) point_descs.get(i)));
                 }
 
-                Runnable logAction = () -> logger.log(Methods.canceled, logValues);
+                Runnable action = () -> {
+                    logger.log(Methods.canceled, logValues);
+                    android.app.NotificationManager notificationManager = (android.app.NotificationManager) start.getSystemService(Context.NOTIFICATION_SERVICE);
+                    notificationManager.cancel(orderId);
+                };
 
                 OrderCanceledAlertMessage message = new OrderCanceledAlertMessage(start.messenger, orderId, alertPointItems);
-                message.setOnPossitiveAction(logAction);
+                message.setOnPossitiveAction(action);
 
                 start.messenger.addMessage(message);
                 start.messenger.showMessages();
