@@ -3,6 +3,7 @@ package com.artfonapps.clientrestore.network.logger;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 
 import com.artfonapps.clientrestore.constants.Fields;
 import com.artfonapps.clientrestore.network.requests.Communicator;
@@ -45,6 +46,14 @@ public class Logger {
         try {
             JSONObject object = new JSONObject();
 
+
+
+            JSONObject deviceInfo = new JSONObject();
+            deviceInfo.put("manufacturer", Build.BRAND);
+            deviceInfo.put("model", Build.MODEL);
+            deviceInfo.put("ApiVersion", Build.VERSION.SDK_INT);
+            deviceInfo.put("OSVersion", Build.VERSION.RELEASE);
+
             object.put("points", new JSONArray(values.getAsString("points")));
             object.put("curPoint", values.get("curPoint"));
             object.put("mobileVersion", context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName);
@@ -56,6 +65,7 @@ public class Logger {
             object.put("method", method);
             object.put(Fields.CURRENT_OPERATION, values.get(Fields.CURRENT_OPERATION));
             object.put("currentPosition", values.get("currentPosition"));
+            object.put("device", deviceInfo.toString());
             ContentValues vals = new ContentValues();
             vals.put(Fields.CURRENT_JSON, object.toString());
             vals.put(Fields.PHONE_NUMBER, values.getAsString(Fields.PHONE_NUMBER));

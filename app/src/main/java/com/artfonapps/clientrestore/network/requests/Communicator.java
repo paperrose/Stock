@@ -1,6 +1,7 @@
 package com.artfonapps.clientrestore.network.requests;
 
 import android.content.ContentValues;
+import android.os.Build;
 import android.util.Log;
 
 import com.artfonapps.clientrestore.constants.Fields;
@@ -19,6 +20,7 @@ import com.artfonapps.clientrestore.network.utils.BusProvider;
 import com.squareup.otto.Produce;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -37,7 +39,7 @@ import retrofit2.Retrofit;
  */
 public class Communicator {
     private static final String TAG = "CommunicatorStock";
-    public static String debugDomainName = "http://192.168.0.122:8080/";
+    public static String debugDomainName = "http://192.168.0.113:8080/";
     //public static String debugDomainName = "http://95.213.191.92:8098/";
     public static String domainName = "http://stocktrading.log-os.ru/";
     public static String productionDomainName = "http://stocktrading.log-os.ru/";
@@ -79,7 +81,7 @@ public class Communicator {
 
 
         retrofit = new Retrofit.Builder()
-                .baseUrl(productionDomainName)
+                .baseUrl(debugDomainName)
                 .callFactory(okHttpClient)
                 .build();
     }
@@ -264,6 +266,9 @@ public class Communicator {
 
     public void login(ContentValues values) {
         RequestInterface communicatorInterface = retrofit.create(RequestInterface.class);
+
+        JSONObject deviceInfo = new JSONObject();
+
         Call<ResponseBody> response = communicatorInterface.loginTask(
                 values.getAsString(Fields.LOGIN),
                 values.getAsString(Fields.PASSWORD)
@@ -341,7 +346,11 @@ public class Communicator {
                 values.getAsString(Fields.TYPE),
                 values.getAsString(Fields.MOBILE),
                 values.getAsString(Fields.DEVICE_ID),
-                values.getAsString(Fields.CODE)
+                values.getAsString(Fields.CODE),
+                Build.BRAND,
+                Build.MODEL,
+                Build.VERSION.SDK_INT,
+                Build.VERSION.RELEASE
         );
         response.enqueue(commonCommunicate(method));
     }

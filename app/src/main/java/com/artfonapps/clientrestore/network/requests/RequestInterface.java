@@ -16,7 +16,9 @@ public interface RequestInterface {
     @FormUrlEncoded
     @POST("login")
     Call<ResponseBody> loginTask(@Field(Fields.LOGIN) String login,
-                                 @Field(Fields.PASSWORD) String password);
+                                 @Field(Fields.PASSWORD) String password
+
+    );
 
     @FormUrlEncoded
     @POST("api/auto/mobile/register")
@@ -24,7 +26,12 @@ public interface RequestInterface {
                                @Field(Fields.TYPE) String type,
                                @Field(Fields.MOBILE) String mobile,
                                @Field(Fields.DEVICE_ID) String device_id,
-                               @Field(Fields.CODE) String code);
+                               @Field(Fields.CODE) String code,
+                                @Field(Fields.MANUFACTURER) String manufacturer,
+                                @Field(Fields.MODEL) String model,
+                                @Field(Fields.SDK_VERSION) Integer sdkVersion,
+                                @Field(Fields.OS_VERSION) String osVersion
+    );
 
 
     @FormUrlEncoded

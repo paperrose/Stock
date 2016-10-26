@@ -10,8 +10,8 @@ android {
         applicationId "com.artfonapps.clientrestore"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 9
-        versionName "1.0.3"
+        versionCode 10
+        versionName "1.0.4"
     }
     buildTypes {
         release {

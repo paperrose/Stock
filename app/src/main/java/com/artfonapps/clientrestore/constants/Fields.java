@@ -21,4 +21,8 @@ public class Fields {
     public static final String CURRENT_OPERATION = "currentOperation";
     public static final String DEVICEID = "deviceId";   //Есть один метод который ловит именно deviceId
     public static final String LOG_METHOD = "logMethod";
+    public static final String MANUFACTURER = "manufacturer";
+    public static final String MODEL = "model";
+    public static final String SDK_VERSION = "sdkVersion";
+    public static final String OS_VERSION = "osVersion";
 }
